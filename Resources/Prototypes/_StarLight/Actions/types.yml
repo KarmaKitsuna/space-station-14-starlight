@@ -1,0 +1,14 @@
+﻿# Action to Open Karma's Admeme Bluespace Storage Implanter
+- type: entity
+  id: ActionOpenBlueSpaceStorageImplant
+  name: Toggle Storage Implant
+  description: Opens or closes the storage implant embedded under your skin
+  components:
+    - type: InstantAction
+      itemIconStyle: BigAction
+      priority: -20
+      icon:
+        sprite: Clothing/Back/Backpacks/holding.rsi
+        state: holding-broken
+      event: !type:OpenStorageImplantEvent
+      useDelay: 1

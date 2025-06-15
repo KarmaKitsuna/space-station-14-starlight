@@ -1,0 +1,9 @@
+﻿# Karma's failed traitor prototype implanters for admemes
+
+- type: entity
+  id: BluespaceStorageImplanter
+  name: bluespace storage implanter
+  parent: BaseImplantOnlyImplanterSyndi
+  components:
+    - type: Implanter
+      implant: BlueSpaceStorageImplant
