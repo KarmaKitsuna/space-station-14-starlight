@@ -27,6 +27,7 @@ public sealed partial class ImplanterSystem : SharedImplanterSystem
         SubscribeLocalEvent<ImplanterComponent, DrawEvent>(OnDraw);
     }
 
+    // TODO: This all needs to be moved to shared and predicted.
     private void OnImplanterAfterInteract(EntityUid uid, ImplanterComponent component, AfterInteractEvent args)
     {
         if (args.Target == null || !args.CanReach || args.Handled)
@@ -60,7 +61,16 @@ public sealed partial class ImplanterSystem : SharedImplanterSystem
 
             //Implant self instantly, otherwise try to inject the target.
             if (args.User == target)
+            {
                 Implant(target, target, uid, component);
+                
+                // STARLIGHT: Check if this implanter should dissolve on use
+                if (component.DissolveOnUse)
+                {
+                    // Queue the implanter for deletion (dissolve on use)
+                    QueueDel(uid);
+                }
+            }
             else
                 TryImplant(component, args.User, target, uid);
         }
@@ -77,6 +87,10 @@ public sealed partial class ImplanterSystem : SharedImplanterSystem
     /// <param name="implanter">The implanter being used</param>
     public void TryImplant(ImplanterComponent component, EntityUid user, EntityUid target, EntityUid implanter)
     {
+        // STARLIGHT: Check if the implantation is allowed before starting the doafter
+        if (!CanImplant(user, target, implanter, component, out var implant, out _))
+            return;
+            
         var args = new DoAfterArgs(EntityManager, user, component.ImplantTime, new ImplantEvent(), implanter, target: target, used: implanter)
         {
             BreakOnDamage = true,
@@ -103,6 +117,15 @@ public sealed partial class ImplanterSystem : SharedImplanterSystem
     //TODO: Remove when surgery is in
     public void TryDraw(ImplanterComponent component, EntityUid user, EntityUid target, EntityUid implanter)
     {
+        // STARLIGHT: If this is self-drawing and the implanter should dissolve on use, handle it immediately
+        if (user == target && component.DissolveOnUse)
+        {
+            Draw(implanter, user, target, component);
+            // Queue the implanter for deletion (dissolve on use)
+            QueueDel(implanter);
+            return;
+        }
+
         var args = new DoAfterArgs(EntityManager, user, component.DrawTime, new DrawEvent(), implanter, target: target, used: implanter)
         {
             BreakOnDamage = true,
@@ -112,7 +135,6 @@ public sealed partial class ImplanterSystem : SharedImplanterSystem
 
         if (_doAfter.TryStartDoAfter(args))
             _popup.PopupEntity(Loc.GetString("injector-component-injecting-user"), target, user);
-
     }
 
     private void OnImplant(EntityUid uid, ImplanterComponent component, ImplantEvent args)
@@ -121,6 +143,13 @@ public sealed partial class ImplanterSystem : SharedImplanterSystem
             return;
 
         Implant(args.User, args.Target.Value, args.Used.Value, component);
+
+        // STARLIGHT: Check if this implanter should dissolve on use
+        if (component.DissolveOnUse)
+        {
+            // Queue the implanter for deletion (dissolve on use)
+            QueueDel(args.Used.Value);
+        }
 
         args.Handled = true;
     }
@@ -131,6 +160,13 @@ public sealed partial class ImplanterSystem : SharedImplanterSystem
             return;
 
         Draw(args.Used.Value, args.User, args.Target.Value, component);
+
+        // STARLIGHT: Check if this implanter should dissolve on use
+        if (component.DissolveOnUse)
+        {
+            // Queue the implanter for deletion (dissolve on use)
+            QueueDel(args.Used.Value);
+        }
 
         args.Handled = true;
     }

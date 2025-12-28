@@ -1,8 +1,8 @@
-using Content.Server.Atmos;
 using Content.Server.NodeContainer.EntitySystems;
 using Content.Server.NodeContainer.NodeGroups;
 using Content.Shared.Atmos;
-using Robust.Shared.Map;
+using Content.Shared.Atmos.Components;
+using Content.Shared.NodeContainer;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Utility;
 
@@ -10,7 +10,7 @@ namespace Content.Server.NodeContainer.Nodes
 {
     /// <summary>
     ///     Connects with other <see cref="PipeNode"/>s whose <see cref="PipeDirection"/>
-    ///     correctly correspond.
+    ///     and <see cref="CurrentPipeLayer"/> correctly correspond.
     /// </summary>
     [DataDefinition]
     [Virtual]
@@ -21,6 +21,12 @@ namespace Content.Server.NodeContainer.Nodes
         /// </summary>
         [DataField("pipeDirection")]
         public PipeDirection OriginalPipeDirection;
+
+        /// <summary>
+        ///     The *current* layer to which the pipe node is assigned.
+        /// </summary>
+        [DataField("pipeLayer")]
+        public AtmosPipeLayer CurrentPipeLayer = AtmosPipeLayer.Primary;
 
         /// <summary>
         ///     The *current* pipe directions (accounting for rotation)
@@ -136,7 +142,17 @@ namespace Content.Server.NodeContainer.Nodes
         public override void OnAnchorStateChanged(IEntityManager entityManager, bool anchored)
         {
             if (!anchored)
+            // Starlight Start: DockPipeSystem
+            {
+                if (_alwaysReachable != null)
+                {
+                    _alwaysReachable.Clear();
+                    if (NodeGroup != null)
+                        entityManager.System<NodeGroupSystem>().QueueRemakeGroup((BaseNodeGroup) NodeGroup);
+                }
                 return;
+            }
+            // Starlight End
 
             // update valid pipe directions
 
@@ -202,6 +218,7 @@ namespace Content.Server.NodeContainer.Nodes
             foreach (var pipe in PipesInDirection(pos, pipeDir, grid, nodeQuery))
             {
                 if (pipe.NodeGroupID == NodeGroupID
+                    && pipe.CurrentPipeLayer == CurrentPipeLayer
                     && pipe.CurrentPipeDirection.HasDirection(pipeDir.GetOpposite()))
                 {
                     yield return pipe;
@@ -229,5 +246,6 @@ namespace Content.Server.NodeContainer.Nodes
                 }
             }
         }
+        public HashSet<PipeNode>? GetAlwaysReachable() => _alwaysReachable; // Starlight: DockPipeSystem
     }
 }

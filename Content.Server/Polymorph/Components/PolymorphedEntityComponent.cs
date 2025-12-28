@@ -18,7 +18,13 @@ public sealed partial class PolymorphedEntityComponent : Component
     /// The original entity that the player will revert back into
     /// </summary>
     [DataField(required: true)]
-    public EntityUid Parent;
+    public EntityUid? Parent;
+
+    /// <summary>
+    /// Whether this polymorph has been reverted.
+    /// </summary>
+    [DataField]
+    public bool Reverted;
 
     /// <summary>
     /// The amount of time that has passed since the entity was created
@@ -29,4 +35,12 @@ public sealed partial class PolymorphedEntityComponent : Component
 
     [DataField]
     public EntityUid? Action;
+
+    //#region Starlight
+    /// <summary>
+    /// if the old parent body allready had the Uncryoable component meaning it should not be removed when de-polymorphing them
+    /// <see cref="UncryoableComponent"/>
+    /// </summary>
+    public bool HadUncryoable = false;
+    //#endregion Starlight
 }

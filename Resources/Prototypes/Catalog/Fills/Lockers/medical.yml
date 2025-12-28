@@ -95,6 +95,8 @@
     - id: BoxBeaker
       prob: 0.3
     - id: BoxPillCanister
+    - id: PatchPack # Starlight
+    - id: PatchPack # Starlight
     - id: BoxBottle
     - id: BoxVial
     - id: PlasmaChemistryVial
@@ -132,6 +134,8 @@
     - id: HandheldGPSBasic
     - id: MedkitFilled
       prob: 0.3
+    - id: PlushieKiosha #starlight
+    - id: EmergencyHandheldCrewMonitor #starlight
 
 - type: entity
   parent: LockerParamedic

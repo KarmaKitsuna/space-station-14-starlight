@@ -3,8 +3,13 @@
   equipment:
     head: ClothingHeadHatUshanka
     jumpsuit: ClothingUniformJumpsuitSoviet
-    belt: ClothingSovietBelt
     shoes: ClothingShoesBootsCowboyBlack
+    id: SovietIdCard
+#utility (non-shotgunner) belt
+- type: startingGear
+  id: SovietComradeGearBelt
+  equipment:
+    belt: ClothingSovietBelt
   storage:
     belt:
     - RadioHandheld
@@ -16,7 +21,7 @@
 #melee
 - type: startingGear
   id: SovietComradeGearBrokenBottle
-  parent: SovietComradeGear
+  parent: [SovietComradeGear, SovietComradeGearBelt]
   inhand:
   - BrokenBottle
 - type: startingGear
@@ -28,17 +33,19 @@
 - type: startingGear
   id: SovietComradeGearSawn
   parent: SovietComradeGear
+  equipment:
+    belt: ClothingSovietBandolier
   inhand:
   - WeaponShotgunSawn
 #pistol
 - type: startingGear
   id: SovietComradeGearMakarov
-  parent: SovietComradeGear
+  parent: [SovietComradeGear, SovietComradeGearBelt]
   inhand:
   - WeaponPistolMakarov
 #rifle
 - type: startingGear
   id: SovietComradeGearAk
-  parent: SovietComradeGear
+  parent: [SovietComradeGear, SovietComradeGearBelt]
   inhand:
   - WeaponRifleAk

@@ -40,7 +40,10 @@ public sealed partial class HumanoidAppearanceSystem : SharedHumanoidAppearanceS
         targetHumanoid.Species = sourceHumanoid.Species;
         targetHumanoid.SkinColor = sourceHumanoid.SkinColor;
         targetHumanoid.EyeColor = sourceHumanoid.EyeColor;
+        targetHumanoid.EyeGlowing = sourceHumanoid.EyeGlowing; //starlight
         targetHumanoid.Age = sourceHumanoid.Age;
+        targetHumanoid.Width = sourceHumanoid.Width; //starlight
+        targetHumanoid.Height = sourceHumanoid.Height; //starlight
         SetSex(target, sourceHumanoid.Sex, false, targetHumanoid);
         targetHumanoid.CustomBaseLayers = new(sourceHumanoid.CustomBaseLayers);
         targetHumanoid.MarkingSet = new(sourceHumanoid.MarkingSet);
@@ -53,6 +56,9 @@ public sealed partial class HumanoidAppearanceSystem : SharedHumanoidAppearanceS
         if (sourceHumanoid.Voice != null)
             SetTTSVoice(target, sourceHumanoid.Voice, targetHumanoid);
         Dirty(target, targetHumanoid);
+        
+        var ev = new MarkingsUpdateEvent(); //starlight
+        RaiseLocalEvent(target, ref ev); //starlight
     }
 
     /// <summary>
@@ -74,6 +80,9 @@ public sealed partial class HumanoidAppearanceSystem : SharedHumanoidAppearanceS
 
         if (sync)
             Dirty(uid, humanoid);
+        
+        var ev = new MarkingsUpdateEvent(); //starlight
+        RaiseLocalEvent(uid, ref ev); //starlight
     }
 
     /// <summary>
@@ -94,7 +103,10 @@ public sealed partial class HumanoidAppearanceSystem : SharedHumanoidAppearanceS
         }
 
         humanoid.MarkingSet.Remove(category, index);
-        Dirty(uid, humanoid);
+        Dirty(uid, humanoid);        
+
+        var ev = new MarkingsUpdateEvent(); //starlight
+        RaiseLocalEvent(uid, ref ev); //starlight
     }
 
     /// <summary>
@@ -122,8 +134,13 @@ public sealed partial class HumanoidAppearanceSystem : SharedHumanoidAppearanceS
             marking.SetColor(i, markings[index].MarkingColors[i]);
         }
 
+        marking.IsGlowing = markings[index].IsGlowing; //starlight
+
         humanoid.MarkingSet.Replace(category, index, marking);
-        Dirty(uid, humanoid);
+        Dirty(uid, humanoid);        
+
+        var ev = new MarkingsUpdateEvent(); //starlight
+        RaiseLocalEvent(uid, ref ev); //starlight
     }
 
     /// <summary>
@@ -150,6 +167,29 @@ public sealed partial class HumanoidAppearanceSystem : SharedHumanoidAppearanceS
             markings[index].SetColor(i, colors[i]);
         }
 
-        Dirty(uid, humanoid);
+        Dirty(uid, humanoid);        
+
+        var ev = new MarkingsUpdateEvent(); //starlight
+        RaiseLocalEvent(uid, ref ev); //starlight
     }
+
+    //starlight start
+    public void SetMarkingGlowing(EntityUid uid, MarkingCategories category, int index, bool glowing,
+        HumanoidAppearanceComponent? humanoid = null)
+    {
+        if (index < 0
+            || !Resolve(uid, ref humanoid)
+            || !humanoid.MarkingSet.TryGetCategory(category, out var markings)
+            || index >= markings.Count)
+        {
+            return;
+        }
+
+        markings[index].IsGlowing = glowing;
+        Dirty(uid, humanoid);
+                
+        var ev = new MarkingsUpdateEvent();
+        RaiseLocalEvent(uid, ref ev);
+    }
+    //starlight end
 }

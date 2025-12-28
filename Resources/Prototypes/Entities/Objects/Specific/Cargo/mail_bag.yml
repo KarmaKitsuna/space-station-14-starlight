@@ -12,19 +12,31 @@
     quickEquip: false
     slots:
     - belt
+    - back
   - type: Item
     size: Ginormous
   - type: Storage
     maxItemSize: Normal
     grid:
-    - 0,0,4,3
+    - 0,0,11,3 #starlight edit, makes it larger due to high pop
     quickInsert: true
     areaInsert: true
     whitelist:
       components:
-      - Paper
+      #- Paper
       - Delivery
-      tags:
-      - Document
-      - Paper
+      #tags:
+      #- Document
+      #- Paper
   - type: Dumpable
+  - type: Tag
+    tags:
+    - ScurretWearable
+    - CorgiWearable
+  - type: ItemToggle  #starlight edit, added toggle
+    onUse: false
+    verbToggleOn: "Activate Magnet"
+    verbToggleOff: "Deactivate Magnet"
+  - type: ComponentToggler
+    components: 
+    - type: MagnetPickup

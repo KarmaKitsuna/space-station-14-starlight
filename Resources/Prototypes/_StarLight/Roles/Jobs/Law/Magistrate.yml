@@ -10,37 +10,23 @@
     - !type:DepartmentTimeRequirement
       department: Security
       time: 36000 # 10h
-    - !type:AnyFlagsRequirement
-      flags:
-      - Staff
-      - Mentor
-      - ExtRoles
-      - Retiree
+    - !type:RolesRequirement
+      proto: ExtRolesReq
   startingGear: MagistrateGear
   icon: "JobIconMagistrate"
+  rules: job-rules-corporate-aligned
   supervisors: job-supervisors-centcom
   canBeAntag: false
   setPreference: true
   access:
   - Magistrate
-  - Bar
-  - Kitchen
-  - Hydroponics
-  - Janitor
-  - Theatre
-  - Chapel
   - Lawyer
   - Brig
   - Security
-  - Medical
-  - Research
-  - Engineering
-  - Cargo
-  - Salvage
   - Command
   - Maintenance
-  extendedAccess:
-  - Hydroponics
+  - GenpopEnter
+  - GenpopLeave
   special:
   - !type:AddImplantSpecial
     implants: [ MindShieldImplant ]
@@ -52,16 +38,28 @@
   id: MagistrateGear
   equipment:
     jumpsuit: MagistrateUniformSuit
-    shoes: ClothingShoesBootsLaceup
+    #shoes: ClothingShoesBootsLaceup
     eyes: ClothingEyesGlassesSecurity
     gloves: ClothingHandsGlovesColorWhite
     outerClothing: ClothingOuterRobesJudge
     id: MagistratePDA
     ears: ClothingHeadsetMagistrate
     head: ClothingHeadHatPwig
+    belt: BoxFolderNanoTrasenClipboard
   storage:
     back:
     - RubberStampMagistrate
     - ClothingNeckLawyerbadge
     - GavelHammer
     - GavelBlock
+    - MagistrateUniformSkirt
+
+- type: chameleonOutfit
+  id: MagistrateChameleonOutfit
+  job: Magistrate
+  equipment:
+    head: ClothingHeadHatPwig
+    eyes: ClothingEyesGlassesSecurity
+    outerClothing: ClothingOuterRobesJudge
+    neck: ClothingNeckLawyerbadge
+    gloves: ClothingHandsGlovesColorWhite

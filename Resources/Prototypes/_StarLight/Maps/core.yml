@@ -5,7 +5,7 @@
   minPlayers: 35
   maxPlayers: 80
   stations:
-    Core:
+    StarlightCore:
       stationProto: StandardNanotrasenStation
       components:
         - type: StationNameSetup
@@ -40,7 +40,6 @@
             Chemist: [ 2, 2 ]
             MedicalIntern: [ 3, 3 ]
             Paramedic: [ 1, 2 ]
-            Surgeon: [ 2, 2 ]  
             #science
             ResearchDirector: [ 1, 1 ]
             Scientist: [ 3, 3 ]

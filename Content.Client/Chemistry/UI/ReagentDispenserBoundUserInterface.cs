@@ -1,4 +1,5 @@
 using Content.Client.Guidebook.Components;
+using Content.Client.UserInterface.Controls;
 using Content.Shared.Chemistry;
 using Content.Shared.Containers.ItemSlots;
 using JetBrains.Annotations;
@@ -31,8 +32,7 @@ namespace Content.Client.Chemistry.UI
 
             // Setup window layout/elements
             _window = this.CreateWindow<ReagentDispenserWindow>();
-            _window.Title = EntMan.GetComponent<MetaDataComponent>(Owner).EntityName;
-            _window.HelpGuidebookIds = EntMan.GetComponent<GuideHelpComponent>(Owner).Guides;
+            _window.SetInfoFromEntity(EntMan, Owner);
 
             // Setup static button actions.
             _window.EjectButton.OnPressed += _ => SendMessage(new ItemSlotButtonPressedEvent(SharedReagentDispenser.OutputSlotName));
@@ -40,8 +40,8 @@ namespace Content.Client.Chemistry.UI
 
             _window.AmountGrid.OnButtonPressed += s => SendMessage(new ReagentDispenserSetDispenseAmountMessage(s));
 
-            _window.OnDispenseReagentButtonPressed += (id) => SendMessage(new ReagentDispenserDispenseReagentMessage(id));
-            _window.OnEjectJugButtonPressed += (id) => SendMessage(new ItemSlotButtonPressedEvent(id));
+            _window.OnDispenseReagentButtonPressed += (data) => SendMessage(new ReagentDispenserDispenseReagentMessage(data)); // Starlight-edit
+            _window.OnEjectJugButtonPressed += (location) => SendMessage(new ReagentDispenserEjectContainerMessage(location));
         }
 
         /// <summary>
@@ -58,5 +58,17 @@ namespace Content.Client.Chemistry.UI
             var castState = (ReagentDispenserBoundUserInterfaceState) state;
             _window?.UpdateState(castState); //Update window state
         }
+
+        // Starlight start: Required for cell charging or UI flashes
+        protected override void ReceiveMessage(BoundUserInterfaceMessage message)
+        {
+            base.ReceiveMessage(message);
+
+            if (message is ReagentDispenserEnergyUpdateMessage energyUpdate)
+            {
+                _window?.UpdateEnergyDisplay(energyUpdate.EnergyAmount);
+            }
+        }
+        // Starlight end
     }
 }

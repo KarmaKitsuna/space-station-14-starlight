@@ -129,6 +129,7 @@
 - type: marking
   id: LizardTailSmooth
   bodyPart: Tail
+  waggingId: LizardTailSmoothAnimated # Starlight
   markingCategory: Tail
   speciesRestriction: [Reptilian]
   sprites:
@@ -140,6 +141,7 @@
 - type: marking
   id: LizardTailLarge
   bodyPart: Tail
+  waggingId: LizardTailLargeAnimated # Starlight
   markingCategory: Tail
   speciesRestriction: [Reptilian]
   sprites:
@@ -149,6 +151,7 @@
 - type: marking
   id: LizardTailSpikes
   bodyPart: Tail
+  waggingId: LizardTailSpikesAnimated # Starlight
   markingCategory: Tail
   speciesRestriction: [Reptilian]
   sprites:
@@ -158,6 +161,7 @@
 - type: marking
   id: LizardTailLTiger
   bodyPart: Tail
+  waggingId: LizardTailLTigerAnimated # Starlight
   markingCategory: Tail
   speciesRestriction: [Reptilian]
   sprites:
@@ -167,11 +171,22 @@
 - type: marking
   id: LizardTailDTiger
   bodyPart: Tail
+  waggingId: LizardTailDTigerAnimated # Starlight
   markingCategory: Tail
   speciesRestriction: [Reptilian]
   sprites:
   - sprite: Mobs/Customization/reptilian_parts.rsi
     state: tail_dtiger
+
+- type: marking
+  id: LizardTailAquatic
+  bodyPart: Tail
+  waggingId: LizardTailAquaticAnimated # Starlight
+  markingCategory: Tail
+  speciesRestriction: [Reptilian]
+  sprites:
+  - sprite: Mobs/Customization/reptilian_parts.rsi
+    state: tail_aquatic
 
 - type: marking
   id: LizardSnoutRound
@@ -203,6 +218,24 @@
     state: snout_splotch_primary
   - sprite: Mobs/Customization/reptilian_parts.rsi
     state: snout_splotch_secondary
+
+- type: marking
+  id: LizardSnoutVisageRound
+  bodyPart: Snout
+  markingCategory: Snout
+  speciesRestriction: [Reptilian]
+  sprites:
+  - sprite: Mobs/Customization/reptilian_parts.rsi
+    state: visage_round
+
+- type: marking
+  id: LizardSnoutVisageSharp
+  bodyPart: Snout
+  markingCategory: Snout
+  speciesRestriction: [Reptilian]
+  sprites:
+  - sprite: Mobs/Customization/reptilian_parts.rsi
+    state: visage_sharp
 
 - type: marking
   id: LizardChestTiger
@@ -339,11 +372,21 @@
   - sprite: Mobs/Customization/reptilian_parts.rsi
     state: body_backspikes
 
+- type: marking
+  id: LizardChestFin
+  bodyPart: Chest
+  markingCategory: Chest
+  speciesRestriction: [Reptilian]
+  sprites:
+  - sprite: Mobs/Customization/reptilian_parts.rsi
+    state: body_fin
+
 # Animated
 - type: marking
   id: LizardTailSmoothAnimated
   bodyPart: Tail
   markingCategory: Tail
+  staticId: LizardTailSmooth # Starlight
   speciesRestriction: []
   sprites:
     - sprite: Mobs/Customization/reptilian_parts.rsi
@@ -352,9 +395,20 @@
       state: tail_smooth_wagging_secondary
 
 - type: marking
+  id: LizardTailLargeAnimated
+  bodyPart: Tail
+  markingCategory: Tail
+  staticId: LizardTailLarge # Starlight
+  speciesRestriction: []
+  sprites:
+  - sprite: Mobs/Customization/reptilian_parts.rsi
+    state: tail_large_wagging
+
+- type: marking
   id: LizardTailSpikesAnimated
   bodyPart: Tail
   markingCategory: Tail
+  staticId: LizardTailSpikes # Starlight
   speciesRestriction: []
   sprites:
     - sprite: Mobs/Customization/reptilian_parts.rsi
@@ -364,6 +418,7 @@
   id: LizardTailLTigerAnimated
   bodyPart: Tail
   markingCategory: Tail
+  staticId: LizardTailLTiger # Starlight
   speciesRestriction: []
   sprites:
     - sprite: Mobs/Customization/reptilian_parts.rsi
@@ -373,7 +428,18 @@
   id: LizardTailDTigerAnimated
   bodyPart: Tail
   markingCategory: Tail
+  staticId: LizardTailDTiger # Starlight
   speciesRestriction: []
   sprites:
     - sprite: Mobs/Customization/reptilian_parts.rsi
       state: tail_dtiger_wagging
+
+- type: marking
+  id: LizardTailAquaticAnimated
+  bodyPart: Tail
+  markingCategory: Tail
+  staticId: LizardTailAquatic # Starlight
+  speciesRestriction: []
+  sprites:
+    - sprite: Mobs/Customization/reptilian_parts.rsi
+      state: tail_aquatic_wagging

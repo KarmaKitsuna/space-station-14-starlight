@@ -1,15 +1,14 @@
 - type: entity
   id: BaseCartridgeMagnum
   name: cartridge (.45 magnum) 
-  parent: [ BaseCartridge, BaseSecurityContraband ]
+  parent: [ BaseCartridge, BaseSecuritySalvageContraband ] #Starlight
   abstract: true
   components:
   - type: Tag
     tags:
-      - Cartridge
       - CartridgeMagnum
-  - type: HitScanCartridgeAmmo
-    hitscan: BulletMagnumTraceSP
+  - type: CartridgeAmmo
+    proto: BulletMagnumTraceSP
   - type: Sprite
     sprite: Objects/Weapons/Guns/Ammunition/Casings/ammo_casing.rsi
     layers:
@@ -22,9 +21,10 @@
   id: CartridgeMagnumSP
   name: cartridge (.45 magnum SP)
   parent: BaseCartridgeMagnum
+  description: Heavy magnum cartridge mostly used by revolvers. Standard kinetic ammunition is common and useful in most situations.
   components:
-  - type: HitScanCartridgeAmmo
-    hitscan: BulletMagnumTraceSP
+  - type: CartridgeAmmo
+    proto: BulletMagnumTraceSP
   - type: Sprite
     layers:
       - state: base
@@ -37,9 +37,10 @@
   id: CartridgeMagnumHP
   name: cartridge (.45 magnum HP)
   parent: BaseCartridgeMagnum
+  description: Heavy magnum cartridge mostly used by revolvers. Chalk ammunition is generally non-harmful, used for practice.
   components:
-  - type: HitScanCartridgeAmmo
-    hitscan: BulletMagnumTraceHP
+  - type: CartridgeAmmo
+    proto: BulletMagnumTraceHP
   - type: Sprite
     layers:
       - state: base
@@ -52,9 +53,10 @@
   id: CartridgeMagnumFMJ
   name: cartridge (.45 magnum FMJ)
   parent: BaseCartridgeMagnum
+  description: Heavy magnum cartridge mostly used by revolvers. Incendiary ammunition contains a self-igniting compound that sets the target ablaze.
   components:
-  - type: HitScanCartridgeAmmo
-    hitscan: BulletMagnumTraceFMJ
+  - type: CartridgeAmmo
+    proto: BulletMagnumTraceFMJ
   - type: Sprite
     layers:
       - state: base
@@ -68,8 +70,8 @@
   name: cartridge (.45 magnum AP)
   parent: BaseCartridgeMagnum
   components:
-  - type: HitScanCartridgeAmmo
-    hitscan: BulletMagnumTraceAP
+  - type: CartridgeAmmo
+    proto: BulletMagnumTraceAP
   - type: Sprite
     layers:
       - state: base
@@ -83,8 +85,8 @@
   name: cartridge (.45 magnum practice)
   parent: BaseCartridgeMagnum
   components:
-  - type: HitScanCartridgeAmmo
-    hitscan: BulletMagnumTracePractice
+  - type: CartridgeAmmo
+    proto: BulletMagnumTracePractice
   - type: Sprite
     layers:
       - state: base
@@ -97,9 +99,10 @@
   id: CartridgeMagnumIncendiary
   name: cartridge (.45 magnum incendiary)
   parent: BaseCartridgeMagnum
+  description: Heavy magnum cartridge mostly used by revolvers. Armor piercing ammunition is renowned for its ability to cut straight through body armor.
   components:
-  - type: HitScanCartridgeAmmo
-    hitscan: BulletMagnumTraceIncendiary
+  - type: CartridgeAmmo
+    proto: BulletMagnumTraceIncendiary
   - type: Sprite
     layers:
       - state: base
@@ -112,9 +115,10 @@
   id: CartridgeMagnumUranium
   name: cartridge (.45 magnum uranium)
   parent: BaseCartridgeMagnum
+  description: Heavy magnum cartridge mostly used by revolvers. Uranium ammunition replaces the lead core of the bullet with fissile material, irradiating the target from the inside.
   components:
-  - type: HitScanCartridgeAmmo
-    hitscan: BulletMagnumTraceUranium
+  - type: CartridgeAmmo
+    proto: BulletMagnumTraceUranium
   - type: Sprite
     layers:
       - state: base
@@ -122,4 +126,3 @@
       - state: tip
         map: [ "enum.AmmoVisualLayers.Tip" ]
         color: "#65fe08"
-

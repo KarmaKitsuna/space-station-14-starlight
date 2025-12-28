@@ -5,6 +5,7 @@ using Content.Server.NodeContainer.NodeGroups;
 using Content.Server.NodeContainer.Nodes;
 using Content.Shared.Administration;
 using Content.Shared.NodeContainer;
+using Content.Shared.NodeContainer.NodeGroups;
 using JetBrains.Annotations;
 using Robust.Server.Player;
 using Robust.Shared.Enums;
@@ -365,6 +366,27 @@ namespace Content.Server.NodeContainer.EntitySystems
                 }
             }
         }
+        // Starlight Start: DockPipeSystem
+        private IEnumerable<Node> GetCompatibleNodes(
+            Node node,
+            NodeContainerComponent container,
+            EntityQuery<NodeContainerComponent> nodeQuery,
+            EntityQuery<TransformComponent> xformQuery,
+            MapGridComponent? grid)
+        {
+            if (!xformQuery.TryGetComponent(node.Owner, out var xform))
+                yield break;
+
+            if (!node.Connectable(EntityManager, xform))
+                yield break;
+
+            foreach (var reachable in node.GetReachableNodes(xform, nodeQuery, xformQuery, grid, EntityManager))
+            {
+                if (xformQuery.HasComponent(reachable.Owner))
+                    yield return reachable;
+            }
+        }
+        // Starlight End
 
         private void VisDoUpdate(float frametime)
         {
@@ -446,6 +468,7 @@ namespace Content.Server.NodeContainer.EntitySystems
                 NodeGroupID.Pipe => Color.Blue,
                 NodeGroupID.WireNet => Color.DarkMagenta,
                 NodeGroupID.Teg => Color.Red,
+                NodeGroupID.ExCable => Color.Pink,
                 _ => Color.White
             };
         }

@@ -1,11 +1,37 @@
-chat-emote-name-mews = mews
-chat-emote-name-hisses = hisses
+# Emote Names
+chat-emote-name-mew = Mew
+chat-emote-name-hiss = Hiss
+chat-emote-name-purr = Purr
+chat-emote-name-meow = Meow
+chat-emote-name-trill = Trill
+chat-emote-name-yip = Yip
+chat-emote-name-marr = Marr
+chat-emote-name-wurble = Wurble
+chat-emote-name-scree = Scree
+chat-emote-name-call = Call
+chat-emote-name-squawk = Squawk
+chat-emote-name-lizardpurr = Purr
+chat-emote-name-lizardhiss = Hiss
+chat-emote-name-lizardrattle = Rattle
+chat-emote-name-flap-wings = Flap wings
+chat-emote-name-bubble = Bubble
+chat-emote-name-pop = Pop
 
-# Name
-chat-emote-name-howl = Howl
-chat-emote-name-growl = Growl
-chat-emote-name-bark = Bark
-# Msg
-chat-emote-msg-howl = howls
-chat-emote-msg-growl = growls
-chat-emote-msg-bark = barks
+# Emote Messages
+chat-emote-msg-mew = mews
+chat-emote-msg-hiss = hisses
+chat-emote-msg-purr = purrs
+chat-emote-msg-meow = meows
+chat-emote-msg-trill = trills
+chat-emote-msg-yip = yips
+chat-emote-msg-marr = marrs
+chat-emote-msg-wurble = wurbles
+chat-emote-msg-scree = screes
+chat-emote-msg-call = calls
+chat-emote-msg-squawk = squawks
+chat-emote-msg-lurr = purrs
+chat-emote-msg-liss = hisses
+chat-emote-msg-rattle = rattles
+chat-emote-msg-flap-wings = flaps {POSS-ADJ($entity)} wings.
+chat-emote-msg-bubble = bubbles
+chat-emote-msg-pop = pops

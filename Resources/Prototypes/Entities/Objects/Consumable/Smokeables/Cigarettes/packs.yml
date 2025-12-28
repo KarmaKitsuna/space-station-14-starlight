@@ -50,10 +50,19 @@
   - type: Storage
     grid:
     - 0,0,4,1
-  - type: StorageFill
-    contents:
-    - id: Cigarette
-      amount: 10
+    # 🌟Starlight - Start🌟
+    whitelist:
+      components:
+        - Smokable
+        - Matchstick
+        - Welder # for lighters
+        - Crayon # they're ciggie shaped
+    # 🌟Starlight - End🌟
+  - type: EntityTableContainerFill
+    containers:
+      storagebase:
+        id: Cigarette
+        amount: 10
   - type: ItemCounter
     count:
       tags: [Cigarette]
@@ -119,10 +128,14 @@
   - type: Storage
     grid:
     - 0,0,4,1
-  - type: StorageFill
-    contents:
-    - id: CigaretteRandom
-      amount: 10
+    # 🌟Starlight - Start🌟
+    whitelist:
+      components:
+        - Smokable
+        - Matchstick
+        - Welder # for lighters
+        - Crayon # they're ciggie shaped
+    # 🌟Starlight - End🌟
   - type: ItemCounter
     count:
       tags: [Cigarette]
@@ -146,6 +159,10 @@
     sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/green.rsi
   - type: Item
     sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/green.rsi
+  # Starlight-start: Vending Machines Prices
+  - type: ItemPrice
+    priceCategory: cigaretes
+  # Starlight-end
 
 - type: entity
   id: CigPackRed
@@ -157,6 +174,10 @@
     sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/red.rsi
   - type: Item
     sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/red.rsi
+  # Starlight-start: Vending Machines Prices
+  - type: ItemPrice
+    priceCategory: cigaretes
+  # Starlight-end
 
 - type: entity
   id: CigPackBlue
@@ -168,6 +189,10 @@
     sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/blue.rsi
   - type: Item
     sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/blue.rsi
+  # Starlight-start: Vending Machines Prices
+  - type: ItemPrice
+    priceCategory: cigaretes
+  # Starlight-end
 
 - type: entity
   id: CigPackBlack
@@ -179,49 +204,26 @@
     sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/black.rsi
   - type: Item
     sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/black.rsi
+  # Starlight-start: Vending Machines Prices
+  - type: ItemPrice
+    priceCategory: cigaretes
+  # Starlight-end
 
 - type: entity
-  id: CigPackSyndicate
-  parent: [CigPackBase, BaseSyndicateContraband]
+  id: CigPackSyndicate  #SL EDIT, Syndie to non-contra
+  parent: CigPackBase
   name: Interdyne herbals packet
-  description: Elite cigarettes for elite syndicate agents. Infused with medicine for when you need to do more than calm your nerves.
+  description: Medicinal cigarettes infused with medicine for when you need to do more than calm your nerves.  #SL EDIT, desc change for lore
   components:
   - type: Sprite
     sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/syndicate.rsi
   - type: Item
     sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/syndicate.rsi
-  - type: StorageFill
-    contents:
-    - id: CigaretteSyndicate
-      amount: 10
-
-- type: entity
-  id: CigPackMixedMedical
-  parent: CigPackMixedBase
-  name: Dan's soaked smokes
-  suffix: Medical
-  description: Dan worked with NT chemistry to dispose of excess chemicals, ENJOY.
-  components:
-  - type: Sprite
-    sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/mixed.rsi
-  - type: Item
-    sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/mixed.rsi
-  - type: StorageFill
-    contents:
-    - id: CigaretteIron
-    - id: CigaretteTricordrazine
-    - id: CigaretteDylovene
-    - id: CigaretteDermaline
-    - id: CigaretteArithrazine
-    - id: CigaretteBicaridine
-    - id: CigaretteIpecac
-    - id: CigaretteOmnizine
-      prob: 0.25
-    - id: CigaretteDexalin
-      prob: 0.25
-    - id: CigarettePax
-      prob: 0.10
-
+  - type: EntityTableContainerFill
+    containers:
+      storagebase:
+        id: CigaretteSyndicate
+        amount: 10
 
 - type: entity
   id: CigPackMixed
@@ -234,52 +236,125 @@
     sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/mixed.rsi
   - type: Item
     sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/mixed.rsi
-  - type: StorageFill
-    contents:
-    - id: CigaretteBbqSauce
-      prob: 0.70
-    - id: CigaretteBlackPepper
-      prob: 0.70
-    - id: CigaretteCapsaicinOil
-      prob: 0.70
-    - id: CigaretteBread
-      prob: 0.70
-    - id: CigaretteMilk
-      prob: 0.70
-    - id: CigaretteBanana
-      prob: 0.10
-    - id: CigaretteTHC
-      prob: 0.70
-    - id: CigaretteTricordrazine
-      prob: 0.25
-    - id: CigaretteSpaceDrugs
-      prob: 0.50
+  - type: EntityTableContainerFill
+    containers:
+      storagebase: !type:NestedSelector
+        rolls: !type:RangeNumberSelector
+          range: 2, 9
+        tableId: RandomSoakedSmokeTable
+  # Starlight-start: Vending Machines Prices
+  - type: ItemPrice
+    priceCategory: cigaretes
+  # Starlight-end
+
+# Entity tables
+
+- type: entityTable
+  id: RandomSoakedSmokeTable
+  table: !type:GroupSelector
+    children:
+    - id: CigaretteLead
+      weight: 1
     - id: CigaretteLicoxide
-      prob: 0.10
+      weight: 1
+    - id: CigaretteFrezon
+      weight: 1
+    - id: CigarettePhlogiston
+      weight: 1
+    - id: CigaretteWeldingFuel
+      weight: 3
+    - id: CigaretteMold
+      weight: 3
+    - id: CigaretteRadium
+      weight: 3
+    - id: CigaretteOmnizine
+      weight: 4
+    - id: CigaretteTricordrazine
+      weight: 4
+    - id: CigaretteIron
+      weight: 4
+    - id: CigaretteDylovene
+      weight: 4
+    - id: CigaretteDermaline
+      weight: 4
+    - id: CigaretteArithrazine
+      weight: 4
+    - id: CigaretteBicaridine
+      weight: 4
+    - id: CigaretteDexalin
+      weight: 4
+    - id: CigaretteHaloperidol
+      weight: 6
+    - id: CigaretteLaughter
+      weight: 6
+    - id: CigaretteLipolicide
+      weight: 6
+    - id: CigaretteSodiumPolyacrylate
+      weight: 6
+    - id: CigaretteRobustHarvest
+      weight: 6
+    - id: CigaretteBanana
+      weight: 7
+    - id: CigaretteBlackPepper
+      weight: 7
+    - id: CigaretteCapsaicinOil
+      weight: 7
+    - id: CigaretteBbqSauce
+      weight: 7
+    - id: CigaretteNutriment
+      weight: 7
+    - id: CigaretteSaline
+      weight: 7
+
+### begin SL
 
 - type: entity
-  id: CigPackMixedNasty
-  parent: CigPackMixedBase
-  name: Dan's soaked smokes
-  suffix: Nasty
-  description: Dan worked with NT chemistry to dispose of excess chemicals, ENJOY.
+  id: CigPackRollie
+  parent: PackPaperRolling
+  name: Rollie Packet
+  description: An old rolling paper packet full of things to make rollies with.
   components:
-  - type: Sprite
-    sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/mixed.rsi
-  - type: Item
-    sprite: Objects/Consumable/Smokeables/Cigarettes/Packs/mixed.rsi
-  - type: StorageFill
-    contents:
-    - id: CigaretteSpaceDrugs
-      amount: 2
-    - id: CigaretteWeldingFuel
-      amount: 2
-    - id: CigaretteMold
-      amount: 2
-    - id: CigaretteTHC
-    - id: CigaretteLicoxide
-      prob: 0.50
-    - id: CigarettePax
-      prob: 0.10
-    - id: CigaretteMuteToxin
-      prob: 0.05
+  - type: EntityTableContainerFill
+    containers:
+      storagebase: !type:AllSelector
+        children:
+        - id: CigaretteFilter
+          amount: 2
+        - id: PaperRolling
+          amount: 2
+        - id: GroundTobacco5
+          amount: 2
+        - id: CigaretteSyndicate
+          amount: 2
+
+- type: entity
+  id: CigPackMedRollie
+  parent: PackPaperRolling
+  name: medicinal blunt packet
+  description: An old rolling paper packet full of things to make blunts with. Its purely medicinal man..
+  components:
+  - type: EntityTableContainerFill
+    containers:
+      storagebase: !type:AllSelector
+        children:
+        - id: LeavesTobaccoDried5
+          amount: 2
+        - id: GroundCannabis10
+          amount: 1
+        - id: Blunt
+          amount: 2
+
+- type: entity
+  id: CigPackBub
+  parent: PackPaperRolling
+  name: greyman's specials pack
+  description: An old rolling paper packet full of Greyman's special cigarettes. You feel more surgically inclined while smoking them.
+  components:
+  - type: EntityTableContainerFill
+    containers:
+      storagebase: !type:AllSelector
+        children:
+        - id: CigaretteBub
+          amount: 10
+
+### end SL

@@ -1,6 +1,9 @@
 ﻿using Content.Shared.Body.Part;
+using Content.Shared.Body.Systems;
 using Content.Shared.Buckle.Components;
+using Content.Shared.Chemistry.Reagent;
 using Content.Shared.DoAfter;
+using Content.Shared.Interaction;
 using Content.Shared.Inventory;
 using Content.Shared.Item;
 using Content.Shared.Item.ItemToggle.Components;
@@ -24,6 +27,7 @@ public abstract partial class SharedSurgerySystem
         SubscribeLocalEvent<SurgeryClearProgressComponent, SurgeryStepCompleteEvent>(OnClearProgressStep);
         SubscribeLocalEvent<SurgeryStepComponent, SurgeryStepEvent>(OnStep);
         SubscribeLocalEvent<SurgeryTargetComponent, SurgeryDoAfterEvent>(OnTargetDoAfter);
+        SubscribeLocalEvent<SurgeryTargetComponent, AccessibleOverrideEvent>(OnOverrideAccess);
 
         SubscribeLocalEvent<SurgeryStepComponent, SurgeryCanPerformStepEvent>(OnCanPerformStep);
 
@@ -44,7 +48,7 @@ public abstract partial class SharedSurgerySystem
                 Dirty(args.Target.Value, dirtyPart, Comp<MetaDataComponent>(args.Target.Value));
             return;
         }
-        
+
         if (!_random.Prob(args.SuccessRate))
         {
             if (_net.IsClient) return;
@@ -107,6 +111,8 @@ public abstract partial class SharedSurgerySystem
 
             if (_net.IsServer && TryComp(tool, out SurgeryToolComponent? toolComp) && toolComp.EndSound != null)
                 _audio.PlayPvs(toolComp.EndSound, tool);
+            if (ent.Comp.ReagentId != null && _solutionContainerSystem.TryGetSolution(tool, "drink", out var solution))
+                _solutionContainerSystem.RemoveReagent(solution.Value, new ReagentQuantity(ent.Comp.ReagentId, ent.Comp.ReagentQuantity));
         }
 
         foreach (var reg in (ent.Comp.Add ?? []).Values)
@@ -119,20 +125,32 @@ public abstract partial class SharedSurgerySystem
             AddComp(args.Part, newComp);
         }
 
-        foreach (var reg in (ent.Comp.BodyAdd ?? []).Values)
-        {
-            var compType = reg.Component.GetType();
-            if (HasComp(args.Body, compType))
-                continue;
-
-            AddComp(args.Part, _compFactory.GetComponent(compType));
-        }
+        if (ent.Comp.BodyAdd != null)
+            EntityManager.AddComponents(args.Body, ent.Comp.BodyAdd, false);
 
         foreach (var reg in (ent.Comp.Remove ?? []).Values)
             RemComp(args.Part, reg.Component.GetType());
 
         foreach (var reg in (ent.Comp.BodyRemove ?? []).Values)
             RemComp(args.Body, reg.Component.GetType());
+    }
+
+    private void OnOverrideAccess(Entity<SurgeryTargetComponent> ent, ref AccessibleOverrideEvent args)
+    {
+        // Check if the entity is the target to avoid giving the hooked entity access to everything.
+        // If we already have access we don't need to run more code.
+        if (args.Accessible || args.Target != ent.Owner)
+            return;
+
+        var xform = Transform(ent);
+        var root = _containers.GetContainingContainers((ent, xform)).FirstOrDefault(x => x.ID == SharedBodySystem.BodyRootContainerId); //get the root container
+        if (root == null)
+            return;
+        if (!_interaction.CanAccess(args.User, root.Owner))
+            return;
+
+        args.Accessible = true;
+        args.Handled = true;
     }
 
     private void OnCanPerformStep(Entity<SurgeryStepComponent> ent, ref SurgeryCanPerformStepEvent args)
@@ -148,7 +166,7 @@ public abstract partial class SharedSurgerySystem
 
         if (args.Invalid != StepInvalidReason.None)
             return;
-        
+
         if (_inventory.TryGetContainerSlotEnumerator(args.Body, out var enumerator, args.TargetSlots))
         {
             var items = 0f;
@@ -156,7 +174,7 @@ public abstract partial class SharedSurgerySystem
             while (enumerator.MoveNext(out var con))
             {
                 total++;
-                if (con.ContainedEntity != null)
+                if (con.ContainedEntity != null && !_tag.HasTag(con.ContainedEntity.Value, "SurgeryCompatibleArmor"))
                     items++;
             }
 
@@ -197,6 +215,13 @@ public abstract partial class SharedSurgerySystem
                 args.Invalid = StepInvalidReason.TooHigh;
                 return;
             }
+            else if (ent.Comp.ReagentId != null && _solutionContainerSystem.GetTotalPrototypeQuantity(tool, ent.Comp.ReagentId) < ent.Comp.ReagentQuantity)
+            {
+                args.Invalid = StepInvalidReason.NotEnoughReagent;
+                if (reg.Component is ISurgeryToolComponent toolComp)
+                    args.Popup = $"You need at least {ent.Comp.ReagentQuantity}u of {ent.Comp.ReagentId} in {toolComp.ToolName} to perform this step!";
+                return;
+            }
 
             args.ValidTools.Add(tool);
         }
@@ -208,7 +233,7 @@ public abstract partial class SharedSurgerySystem
         if (GetEntity(args.Entity) is not { Valid: true } body
             || GetEntity(args.Part) is not { Valid: true } targetPart
             || !IsSurgeryValid(body, targetPart, args.Surgery, args.Step, out var surgery, out var part, out var step)
-            || GetSingleton(args.Step) is not { } stepEnt
+            || !_entitySystem.TryGetSingleton(args.Step, out var stepEnt)
             || !TryComp(stepEnt, out SurgeryStepComponent? stepComp)
             || !CanPerformStep(user, body, part.Comp.PartType, step, true, out _, out _, out var validTools))
         {
@@ -222,8 +247,13 @@ public abstract partial class SharedSurgerySystem
             return;
         }
 
+        if (_net.IsServer && TryComp(step, out MetaDataComponent? meta))
+        {
+            var surgeonName = MetaData(user).EntityName;
+            _popup.PopupEntity($"{surgeonName.ToLower()} starts {meta.EntityName.ToLower()}", part, PopupType.LargeCaution);
+        }
+
         var duration = stepComp.Duration;
-        
         float SmallestSuccessRate = 1f;
 
         foreach (var tool in validTools)
@@ -231,7 +261,7 @@ public abstract partial class SharedSurgerySystem
             {
                 duration *= toolComp.Speed;
                 if (toolComp.StartSound != null) _audio.PlayPvs(toolComp.StartSound, tool);
-                
+
                 if(toolComp.SuccessRate < SmallestSuccessRate)
                     SmallestSuccessRate = toolComp.SuccessRate;
             }
@@ -264,8 +294,8 @@ public abstract partial class SharedSurgerySystem
         {
             foreach (var requirementId in requirementsIds)
             {
-                if (GetSingleton(requirementId) is { } requirement 
-                    && GetNextStep(body, part, requirement, requirements) is { } requiredNext 
+                if (!_entitySystem.TryGetSingleton(requirementId, out var requirement)
+                    && GetNextStep(body, part, requirement, requirements) is { } requiredNext
                     && IsSurgeryValid(body, part, requirementId, requiredNext.Surgery.Comp.Steps[requiredNext.Step], out _, out _, out _))
                     return requiredNext;
             }
@@ -290,9 +320,9 @@ public abstract partial class SharedSurgerySystem
         {
             foreach (var requirement in requirements)
             {
-                if (GetSingleton(requirement) is not { } requiredEnt 
-                    || !TryComp(requiredEnt, out SurgeryComponent? requiredComp) 
-                    || !PreviousStepsComplete(body, part, (requiredEnt, requiredComp), step) 
+                if (!_entitySystem.TryGetSingleton(requirement, out var requiredEnt)
+                    || !TryComp(requiredEnt, out SurgeryComponent? requiredComp)
+                    || !PreviousStepsComplete(body, part, (requiredEnt, requiredComp), step)
                     && IsSurgeryValid(body, part, requirement, step, out _, out _, out _))
                     return false;
             }

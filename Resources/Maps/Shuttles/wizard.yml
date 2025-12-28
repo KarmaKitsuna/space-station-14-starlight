@@ -1,11 +1,11 @@
 meta:
   format: 7
   category: Grid
-  engineVersion: 248.0.2
-  forkId: ""
-  forkVersion: ""
-  time: 03/20/2025 07:20:18
-  entityCount: 793
+  engineVersion: 251.0.0
+  forkId: Starlight
+  forkVersion: 1732131340
+  time: 05/21/2025 11:50:38
+  entityCount: 795
 maps: []
 grids:
 - 768
@@ -1956,6 +1956,13 @@ entities:
     - type: Transform
       pos: -2.780127,-2.51509
       parent: 768
+- proto: ClothingBackpackSatchelLeather
+  entities:
+  - uid: 794
+    components:
+    - type: Transform
+      pos: -2.5143497,-5.278594
+      parent: 768
 - proto: ClothingBeltUtilityFilled
   entities:
   - uid: 635
@@ -1984,12 +1991,12 @@ entities:
     - type: Transform
       pos: -5.52865,-9.359842
       parent: 768
-- proto: ClothingHeadHatWizardFake
+- proto: ClothingHeadHatWizard
   entities:
   - uid: 610
     components:
     - type: Transform
-      pos: -2.4916646,-1.7707616
+      pos: -2.623579,-1.7162492
       parent: 768
 - proto: ClothingHeadHelmetWizardHelm
   entities:
@@ -2191,6 +2198,11 @@ entities:
     components:
     - type: Transform
       pos: -1.6417658,-9.454163
+      parent: 768
+  - uid: 792
+    components:
+    - type: Transform
+      pos: -3.3355608,-5.270721
       parent: 768
 - proto: FoodMeat
   entities:
@@ -4975,6 +4987,15 @@ entities:
     - type: Transform
       pos: -8.5,-1.5
       parent: 768
+- proto: WarpPoint
+  entities:
+  - uid: 795
+    components:
+    - type: Transform
+      pos: -0.5,-1.5
+      parent: 768
+    - type: WarpPoint
+      location: Wizard Shuttle
 - proto: WeaponCapacitorRecharger
   entities:
   - uid: 214

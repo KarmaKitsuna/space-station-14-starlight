@@ -11,16 +11,7 @@
             "name": "brigmed"
         },
         {
-            "name": "calendar"
-        },
-        {
-            "name": "cleanhands"
-        },
-        {
             "name": "disposals_proper"
-        },
-        {
-            "name": "eyechart"
         },
         {
             "name": "nosmoking"
@@ -38,7 +29,11 @@
             "name": "yessmoking"
         },
         {
-            "name": "youtoolpia"
+            "name": "direction_mining",
+            "directions": 4
+        },
+        {
+            "name": "mining"
         }
     ]
 }

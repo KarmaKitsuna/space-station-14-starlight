@@ -104,15 +104,21 @@
       - id: ToyFigurineNukieCommander
         prob: 0.50
         orGroup: SpacemenFig
-      - id: ToyGriffin
+      - id: ToyFigurineGriffin
         prob: 0.50
         orGroup: SpacemenFig
-      - id: ToyOwlman
+      - id: ToyFigurineOwlman
         prob: 0.50
         orGroup: SpacemenFig
-      - id: ToySkeleton
+      - id: ToyFigurineSkeleton
         prob: 0.50
         orGroup: SpacemenFig
+      - id: ToyFigurineSkeleton
+        prob: 0.50
+        orGroup: SpacemenFig
+      - id: ToyFigurineThief
+        prob: 0.30
+        orgroup: SpacemenFig
       - id: ToyFigurineRatKing
         prob: 0.30
         orGroup: SpacemenFig
@@ -131,3 +137,63 @@
       - id: ToyFigurineHamlet
         prob: 0.20
         orGroup: SpacemenFig
+
+- type: entity
+  parent: BaseItem
+  id: MysteryLighterBox
+  name: Novelty lighter mystery box
+  suffix: Filled
+  description: A box of discontinued promotional lighters. A faded and scratched label on the side reads, "May contain contraband." #Starlight-edit
+  components:
+  - type: Sprite
+    sprite: Objects/Fun/figurines.rsi
+    layers:
+    - state: fig_box
+  - type: SpawnItemsOnUse
+    items:
+      - id: MysteryFigureBoxTrash
+      - id: CybersunFlippo
+        orGroup: Lighterbox
+        weight: 0.15 #Starlight-edit
+      - id: InterdyneFlippo
+        orGroup: Lighterbox
+        weight: 0.15 #Starlight-edit
+      - id: NanotrasenFlippo
+        orGroup: Lighterbox
+        weight: 0.15 #Starlight-edit
+      - id: WaffleCoFlippo
+        orGroup: Lighterbox
+        weight: 0.15 #Starlight-edit
+      - id: HonkCoFlippo
+        orGroup: Lighterbox
+        weight: 0.15 #Starlight-edit
+      - id: GorlexMatchbox
+        orGroup: Lighterbox
+        weight: 0.05 #Starlight-edit
+      - id: DonkcoLighter
+        orGroup: Lighterbox
+        weight: 0.15 #Starlight-edit
+      - id: SyndicateFlippo
+        orGroup: Lighterbox
+        weight: 0.05 #Starlight-edit
+
+- type: entity
+  parent: MysteryLighterBox
+  id: UplinkLighterBox
+  suffix: Uplink
+  components:
+  - type: SpawnItemsOnUse
+    items:
+      - id: MysteryFigureBoxTrash
+      - id: CybersunFlippo
+        orGroup: Lighterbox
+      - id: InterdyneFlippo
+        orGroup: Lighterbox
+      - id: WaffleCoFlippo
+        orGroup: Lighterbox
+      - id: GorlexMatchbox
+        orGroup: Lighterbox
+      - id: DonkcoLighter
+        orGroup: Lighterbox
+      - id: SyndicateFlippo
+        orGroup: Lighterbox
