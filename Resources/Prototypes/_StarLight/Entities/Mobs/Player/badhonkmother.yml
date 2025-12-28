@@ -26,100 +26,87 @@
     - type: AnimationPlayer
 
 - type: entity
-  parent: [MobBadHonkmotherBase, BaseMob, MobPolymorphable, MobCombat]
+  parent: [MobBadHonkmotherBase, BaseMob, MobPolymorphable, MobCombat, BaseAnomaly]
   id: BadHonkmother
   components:
-  - type: MobPrice
-    price: -10000 # Pay someone to take her
-  - type: ContentEye
-    maxZoom: 2.0,2.0
-  - type: Fixtures
-    fixtures:
-      fix1:
-        shape:
-          !type:PhysShapeCircle
-          radius: 0.40
-        density: 100
-        mask:
-          - FlyingMobMask
-  - type: MobState
-  - type: Input
-    context: "human"
-  - type: MovementIgnoreGravity
-  - type: IntrinsicRadioReceiver
-  - type: ActiveRadio
-    channels:
-    - Binary
-    - Common
-    - Command
-    - CentCom
-    - Engineering
-    - Medical
-    - Science
-    - Security
-    - Service
-    - Supply
-    - Syndicate
-    globalReceive: true
-  - type: Physics
-    bodyType: KinematicController
-    bodyStatus: InAir
-  - type: CanMoveInAir
-  - type: HTN
-    rootTask:
-      task: SimpleRangedHostileCompound
-  - type: HitscanBatteryAmmoProvider
-    proto: RedLaser
-    fireCost: 62.5
-  - type: Battery
-    maxCharge: 1000
-    startingCharge: 1000
-  - type: BatterySelfRecharger
-    autoRecharge: true
-    autoRechargeRate: 40
-  - type: Gun
-    fireRate: 0.75
-    useKey: false
-    selectedMode: SemiAuto
-    availableModes:
-      - SemiAuto
-    soundGunshot: /Audio/Weapons/Guns/Gunshots/laser_clown.ogg
-  - type: Speech
-  - type: CombatMode
-  - type: InnateTool
-    tools:
-      - id: WeaponBehonkerLaser
-      - id: BikeHorn
-  - type: UserInterface
-    interfaces:
-      enum.StrippingUiKey.Key:
-        type: StrippableBoundUserInterface
-  - type: MeleeWeapon
-    range: 7 
-    soundHit:
-      path: /Audio/Weapons/Xeno/alien_claw_flesh3.ogg
-    animation: WeaponArcThrust
-    damage:
-      types:
-        Piercing: 10
-        Slash: 10
-#  - type: Anomaly
-#    pulseSound:
-#      collection: BananiumHorn
-#      params:
-#        volume: 5
-#  - type: Polymorphable
-#    innatePolymorphs:
-#      - honkmotherMorph
-#  
-#- type: polymorph
-#  id: honkmotherMorph
-#  configuration:
-#    entity: honkmother
-#    transferName: true
-#    revertOnCrit: false
-#    revertOnDeath: false
-#    allowRepeatedMorphs: true
+    - type: MobPrice
+      price: -100000 # Pay someone to take her
+    - type: ContentEye
+      maxZoom: 2.0,2.0
+    - type: Fixtures
+      fixtures:
+        fix1:
+          shape:
+            !type:PhysShapeCircle
+            radius: 0.40
+          density: 100
+          mask:
+            - FlyingMobMask
+    - type: MobState
+    - type: Input
+      context: "human"
+    - type: MovementIgnoreGravity
+    - type: IntrinsicRadioReceiver
+    - type: ActiveRadio
+      channels:
+      - Binary
+      - Common
+      - Command
+      - CentCom
+      - Engineering
+      - Medical
+      - Science
+      - Security
+      - Service
+      - Supply
+      - Syndicate
+      globalReceive: true
+    - type: Physics
+      bodyType: KinematicController
+      bodyStatus: InAir
+    - type: CanMoveInAir
+    - type: HTN
+      rootTask:
+        task: SimpleRangedHostileCompound
+    - type: BatteryAmmoProvider
+      proto: RedLaser
+      fireCost: 62.5
+    - type: PredictedBattery
+      maxCharge: 1000
+      startingCharge: 1000
+    - type: PredictedBatterySelfRecharger
+      autoRechargeRate: 40
+    - type: Gun
+      fireRate: 2
+      useKey: false
+      selectedMode: SemiAuto
+      availableModes:
+        - SemiAuto
+      soundGunshot: /Audio/Weapons/Guns/Gunshots/laser_clown.ogg
+    - type: NpcFactionMember
+      factions:
+        - HonkHostile
+    - type: Speech
+      speechVerb: Cluwne
+    - type: CombatMode
+    - type: InnateTool
+      tools:
+        - id: WeaponBehonkerLaser
+        - id: BikeHorn
+    - type: UserInterface
+      interfaces:
+        enum.StrippingUiKey.Key:
+          type: StrippableBoundUserInterface
+    - type: MeleeWeapon
+      range: 7 
+      soundHit:
+        path: /Audio/Weapons/Xeno/alien_claw_flesh3.ogg
+      animation: WeaponArcThrust
+      damage:
+        types:
+          Piercing: 10
+          Slash: 10
+          Structural: 250
 
 - type: entity
   parent: BadHonkmother

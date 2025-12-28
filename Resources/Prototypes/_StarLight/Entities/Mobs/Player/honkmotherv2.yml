@@ -13,10 +13,11 @@
 
 
 - type: entity
-  parent: [MobHonkmotherBase, BaseMob]
+  parent: [MobHonkmotherBase, BaseMob, MobCombat]
   id: honkmother
   components:
-    - type: CargoSellBlacklist
+    - type: MobPrice
+    - price: -100000 # Pay someone to take her
     - type: ContentEye
       maxZoom: 2.0,2.0
     - type: Fixtures
@@ -67,17 +68,16 @@
     - type: HTN
       rootTask:
         task: SimpleRangedHostileCompound
-    - type: HitscanBatteryAmmoProvider
+    - type: BatteryAmmoProvider
       proto: RedLaser
       fireCost: 62.5
-    - type: Battery
+    - type: PredictedBattery
       maxCharge: 1000
       startingCharge: 1000
-    - type: BatterySelfRecharger
-      autoRecharge: true
+    - type: PredictedBatterySelfRecharger
       autoRechargeRate: 40
     - type: Gun
-      fireRate: 0.75
+      fireRate: 2
       useKey: false
       selectedMode: SemiAuto
       availableModes:
@@ -88,20 +88,6 @@
     - type: Polymorphable
       innatePolymorphs:
         - BadHonkmotherMorph
-
-#- type: entity
-#  id: ActionPolymorphBadHonkMother
-#  name: Transform
-#  description: Change into your true form
-#  components:
-#    - type: InstantAction
-#      useDelay: 60
-#      event: !type:PolymorphActionEvent
-#        protoId: BadHonkmother
-#      itemIconStyle: NoItem
-#      icon:
-#        sprite: Mobs/Demons/badhonkmother.rsi
-#        state: tra
 
 - type: polymorph
   id: BadHonkmotherMorph
