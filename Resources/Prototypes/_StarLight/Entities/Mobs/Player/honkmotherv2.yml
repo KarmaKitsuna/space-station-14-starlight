@@ -14,7 +14,7 @@
 
 - type: entity
   parent: [MobHonkmotherBase, BaseMob, MobCombat]
-  id: honkmother
+  id: Honkmother
   components:
     - type: MobPrice
     - price: -100000 # Pay someone to take her
@@ -89,7 +89,6 @@
       innatePolymorphs:
         - BadHonkmotherMorph
 
-- type: polymorph
   id: BadHonkmotherMorph
   configuration:
     entity: BadHonkmotherTransform
