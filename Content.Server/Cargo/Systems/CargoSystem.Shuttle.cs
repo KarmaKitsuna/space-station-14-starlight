@@ -1,13 +1,14 @@
+using System.Linq;
+using Content.Server.Atmos.EntitySystems; //Starlight
 using Content.Server.Cargo.Components;
-using Content.Shared.Stacks;
 using Content.Shared.Cargo;
 using Content.Shared.Cargo.BUI;
 using Content.Shared.Cargo.Components;
 using Content.Shared.Cargo.Events;
-using Content.Shared.GameTicking;
-using Robust.Shared.Map;
-using Robust.Shared.Random;
+using Content.Shared.Cargo.Prototypes;
+using Content.Shared.CCVar;
 using Robust.Shared.Audio;
+using Robust.Shared.Prototypes;
 
 namespace Content.Server.Cargo.Systems;
 
@@ -17,52 +18,38 @@ public sealed partial class CargoSystem
      * Handles cargo shuttle / trade mechanics.
      */
 
+    [Dependency] private readonly AtmosphereSystem _atmosphereSystem = default!; //Starlight
+
     private static readonly SoundPathSpecifier ApproveSound = new("/Audio/Effects/Cargo/ping.ogg");
+    private bool _lockboxCutEnabled;
 
     private void InitializeShuttle()
     {
         SubscribeLocalEvent<TradeStationComponent, GridSplitEvent>(OnTradeSplit);
 
-        SubscribeLocalEvent<CargoShuttleConsoleComponent, ComponentStartup>(OnCargoShuttleConsoleStartup);
-
         SubscribeLocalEvent<CargoPalletConsoleComponent, CargoPalletSellMessage>(OnPalletSale);
         SubscribeLocalEvent<CargoPalletConsoleComponent, CargoPalletAppraiseMessage>(OnPalletAppraise);
         SubscribeLocalEvent<CargoPalletConsoleComponent, BoundUIOpenedEvent>(OnPalletUIOpen);
 
-        SubscribeLocalEvent<RoundRestartCleanupEvent>(OnRoundRestart);
+        _cfg.OnValueChanged(CCVars.LockboxCutEnabled, (enabled) => { _lockboxCutEnabled = enabled; }, true);
     }
 
     #region Console
-
-    private void UpdateCargoShuttleConsoles(EntityUid shuttleUid, CargoShuttleComponent _)
-    {
-        // Update pilot consoles that are already open.
-        _console.RefreshDroneConsoles();
-
-        // Update order consoles.
-        var shuttleConsoleQuery = AllEntityQuery<CargoShuttleConsoleComponent>();
-
-        while (shuttleConsoleQuery.MoveNext(out var uid, out var _))
-        {
-            var stationUid = _station.GetOwningStation(uid);
-            if (stationUid != shuttleUid)
-                continue;
-
-            UpdateShuttleState(uid, stationUid);
-        }
-    }
-
     private void UpdatePalletConsoleInterface(EntityUid uid)
     {
-        if (Transform(uid).GridUid is not EntityUid gridUid)
+        if (Transform(uid).GridUid is not { } gridUid)
         {
-            _uiSystem.SetUiState(uid, CargoPalletConsoleUiKey.Sale,
-            new CargoPalletConsoleInterfaceState(0, 0, false));
+            _uiSystem.SetUiState(uid,
+                CargoPalletConsoleUiKey.Sale,
+                new CargoPalletConsoleInterfaceState(0, 0, false));
             return;
         }
-        GetPalletGoods(gridUid, out var toSell, out var amount);
-        _uiSystem.SetUiState(uid, CargoPalletConsoleUiKey.Sale,
-            new CargoPalletConsoleInterfaceState((int) amount, toSell.Count, true));
+        GetPalletGoods(gridUid, out var toSell, out var goods);
+        GetGasPalletStocks(gridUid, out var gasPallets, out var gasValues); //Starlight
+        var totalAmount = goods.Sum(t => t.Item3) + gasValues.Sum(t => t.Item2); //Starlight-edit - add gasValues
+        _uiSystem.SetUiState(uid,
+            CargoPalletConsoleUiKey.Sale,
+            new CargoPalletConsoleInterfaceState((int) totalAmount, toSell.Count, true));
     }
 
     private void OnPalletUIOpen(EntityUid uid, CargoPalletConsoleComponent component, BoundUIOpenedEvent args)
@@ -83,28 +70,6 @@ public sealed partial class CargoSystem
         UpdatePalletConsoleInterface(uid);
     }
 
-    private void OnCargoShuttleConsoleStartup(EntityUid uid, CargoShuttleConsoleComponent component, ComponentStartup args)
-    {
-        var station = _station.GetOwningStation(uid);
-        UpdateShuttleState(uid, station);
-    }
-
-    private void UpdateShuttleState(EntityUid uid, EntityUid? station = null)
-    {
-        TryComp<StationCargoOrderDatabaseComponent>(station, out var orderDatabase);
-        TryComp<CargoShuttleComponent>(orderDatabase?.Shuttle, out var shuttle);
-
-        var orders = GetProjectedOrders(station ?? EntityUid.Invalid, orderDatabase, shuttle);
-        var shuttleName = orderDatabase?.Shuttle != null ? MetaData(orderDatabase.Shuttle.Value).EntityName : string.Empty;
-
-        if (_uiSystem.HasUi(uid, CargoConsoleUiKey.Shuttle))
-            _uiSystem.SetUiState(uid, CargoConsoleUiKey.Shuttle, new CargoShuttleConsoleBoundUserInterfaceState(
-                station != null ? MetaData(station.Value).EntityName : Loc.GetString("cargo-shuttle-console-station-unknown"),
-                string.IsNullOrEmpty(shuttleName) ? Loc.GetString("cargo-shuttle-console-shuttle-not-found") : shuttleName,
-                orders
-            ));
-    }
-
     #endregion
 
     private void OnTradeSplit(EntityUid uid, TradeStationComponent component, ref GridSplitEvent args)
@@ -117,55 +82,6 @@ public sealed partial class CargoSystem
     }
 
     #region Shuttle
-
-    /// <summary>
-    /// Returns the orders that can fit on the cargo shuttle.
-    /// </summary>
-    private List<CargoOrderData> GetProjectedOrders(
-        EntityUid shuttleUid,
-        StationCargoOrderDatabaseComponent? component = null,
-        CargoShuttleComponent? shuttle = null)
-    {
-        var orders = new List<CargoOrderData>();
-
-        if (component == null || shuttle == null || component.Orders.Count == 0)
-            return orders;
-
-        var spaceRemaining = GetCargoSpace(shuttleUid);
-        for (var i = 0; i < component.Orders.Count && spaceRemaining > 0; i++)
-        {
-            var order = component.Orders[i];
-            if (order.Approved)
-            {
-                var numToShip = order.OrderQuantity - order.NumDispatched;
-                if (numToShip > spaceRemaining)
-                {
-                    // We won't be able to fit the whole order on, so make one
-                    // which represents the space we do have left:
-                    var reducedOrder = new CargoOrderData(order.OrderId,
-                            order.ProductId, order.ProductName, order.Price, spaceRemaining, order.Requester, order.Reason);
-                    orders.Add(reducedOrder);
-                }
-                else
-                {
-                    orders.Add(order);
-                }
-                spaceRemaining -= numToShip;
-            }
-        }
-
-        return orders;
-    }
-
-    /// <summary>
-    /// Get the amount of space the cargo shuttle can fit for orders.
-    /// </summary>
-    private int GetCargoSpace(EntityUid gridUid)
-    {
-        var space = GetCargoPallets(gridUid, BuySellType.Buy).Count;
-        return space;
-    }
-
     /// GetCargoPallets(gridUid, BuySellType.Sell) to return only Sell pads
     /// GetCargoPallets(gridUid, BuySellType.Buy) to return only Buy pads
     private List<(EntityUid Entity, CargoPalletComponent Component, TransformComponent PalletXform)> GetCargoPallets(EntityUid gridUid, BuySellType requestType = BuySellType.All)
@@ -215,21 +131,47 @@ public sealed partial class CargoSystem
         return outList;
     }
 
+    /// <summary>
+    /// Starlight
+    /// Get the list of Gas Pallets (name pending) for selling gas.
+    /// </summary>
+    /// <remarks>
+    /// Unlike Cargo Pallets, Cargo Gas Pallets only support selling for now, so no second parameter like GetCargoPallets
+    /// </remarks>
+    private List<(EntityUid Entity, CargoGasPalletComponent Component, TransformComponent PalletXform)> GetCargoGasPallets(EntityUid gridUid)
+    {
+        _gasPads.Clear();
+
+        var query = AllEntityQuery<CargoGasPalletComponent, TransformComponent>();
+
+        while (query.MoveNext(out var uid, out var comp, out var compXform))
+        {
+            if (compXform.ParentUid != gridUid ||
+                !compXform.Anchored)
+            {
+                continue;
+            }
+
+            _gasPads.Add((uid, comp, compXform));
+
+        }
+
+        return _gasPads;
+    }
+
     #endregion
 
     #region Station
 
-    private bool SellPallets(EntityUid gridUid, out double amount)
+    private bool SellPallets(EntityUid gridUid, EntityUid station, out HashSet<(EntityUid, OverrideSellComponent?, double)> goods, out HashSet<(EntityUid, double)> gasValues) //Starlight-edit - add gasValues
     {
-        GetPalletGoods(gridUid, out var toSell, out amount);
+        GetPalletGoods(gridUid, out var toSell, out goods);
+        GetGasPalletStocks(gridUid, out var gasPallets, out gasValues); //Starlight
 
-        Log.Debug($"Cargo sold {toSell.Count} entities for {amount}");
-
-        if (toSell.Count == 0)
+        if (toSell.Count == 0 && gasValues.Sum(t => t.Item2) < 1) //Starlight-edit - add gasValues
             return false;
 
-
-        var ev = new EntitySoldEvent(toSell);
+        var ev = new EntitySoldEvent(toSell, station);
         RaiseLocalEvent(ref ev);
 
         foreach (var ent in toSell)
@@ -237,12 +179,17 @@ public sealed partial class CargoSystem
             Del(ent);
         }
 
+        // Starlight - start
+        var gasSaleEvent = new EntitySellContentsEvent(gasPallets, station);
+        RaiseLocalEvent(ref gasSaleEvent);
+        // Starlight - end
+
         return true;
     }
 
-    private void GetPalletGoods(EntityUid gridUid, out HashSet<EntityUid> toSell, out double amount)
+    private void GetPalletGoods(EntityUid gridUid, out HashSet<EntityUid> toSell,  out HashSet<(EntityUid, OverrideSellComponent?, double)> goods)
     {
-        amount = 0;
+        goods = new HashSet<(EntityUid, OverrideSellComponent?, double)>();
         toSell = new HashSet<EntityUid>();
 
         foreach (var (palletUid, _, _) in GetCargoPallets(gridUid, BuySellType.Sell))
@@ -250,7 +197,9 @@ public sealed partial class CargoSystem
             // Containers should already get the sell price of their children so can skip those.
             _setEnts.Clear();
 
-            _lookup.GetEntitiesIntersecting(palletUid, _setEnts,
+            _lookup.GetEntitiesIntersecting(
+                palletUid,
+                _setEnts,
                 LookupFlags.Dynamic | LookupFlags.Sundries);
 
             foreach (var ent in _setEnts)
@@ -273,9 +222,24 @@ public sealed partial class CargoSystem
                 if (price == 0)
                     continue;
                 toSell.Add(ent);
-                amount += price;
+                goods.Add((ent, CompOrNull<OverrideSellComponent>(ent), price));
             }
         }
+    }
+
+    /// <summary>
+    /// Starlight
+    /// Get the value of gasses held in the gas pallets on this grid.
+    /// </summary>
+    private void GetGasPalletStocks(EntityUid gridUid, out HashSet<CargoGasPalletComponent> gasPallets, out HashSet<(EntityUid, double)> gasValues)
+    {
+            gasPallets = new HashSet<CargoGasPalletComponent>();
+            gasValues = new HashSet<(EntityUid, double)>();
+            foreach (var (gasPalletUid, gasPalletComponent, _) in GetCargoGasPallets(gridUid))
+            {
+                    gasPallets.Add(gasPalletComponent);
+                    gasValues.Add((gasPalletUid, _atmosphereSystem.GetPrice(gasPalletComponent.Air)));
+            }
     }
 
     private bool CanSell(EntityUid uid, TransformComponent xform)
@@ -305,28 +269,58 @@ public sealed partial class CargoSystem
     {
         var xform = Transform(uid);
 
-        if (xform.GridUid is not EntityUid gridUid)
+        if (_station.GetOwningStation(uid) is not { } station ||
+            !TryComp<StationBankAccountComponent>(station, out var bankAccount))
         {
-            _uiSystem.SetUiState(uid, CargoPalletConsoleUiKey.Sale,
-            new CargoPalletConsoleInterfaceState(0, 0, false));
             return;
         }
 
-        if (!SellPallets(gridUid, out var price))
+        if (xform.GridUid is not { } gridUid)
+        {
+            _uiSystem.SetUiState(uid,
+                CargoPalletConsoleUiKey.Sale,
+                new CargoPalletConsoleInterfaceState(0, 0, false));
+            return;
+        }
+
+        if (!SellPallets(gridUid, station, out var goods, out var gasses)) //Starlight-edit - add gasses
             return;
 
-        var stackPrototype = _protoMan.Index<StackPrototype>(component.CashType);
-        _stack.Spawn((int) price, stackPrototype, xform.Coordinates);
+        var baseDistribution = CreateAccountDistribution((station, bankAccount));
+        foreach (var (_, sellComponent, value) in goods)
+        {
+            Dictionary<ProtoId<CargoAccountPrototype>, double> distribution;
+            if (sellComponent != null)
+            {
+                var cut = _lockboxCutEnabled ? bankAccount.LockboxCut : bankAccount.PrimaryCut;
+                distribution = new Dictionary<ProtoId<CargoAccountPrototype>, double>
+                {
+                    { sellComponent.OverrideAccount, cut },
+                    { bankAccount.PrimaryAccount, 1.0 - cut },
+                };
+            }
+            else
+            {
+                distribution = baseDistribution;
+            }
+
+            UpdateBankAccount((station, bankAccount), (int) Math.Round(value), distribution, false);
+        }
+
+        // Starlight - start
+        foreach (var (_, value) in gasses)
+        {
+                // TODO: Consider if we want raw gasses to count as lockbox cut to engineering if lockbox cut is enabled
+                UpdateBankAccount((station, bankAccount), (int) Math.Round(value), baseDistribution, false);
+        }
+        // Starlight - end
+
+        Dirty(station, bankAccount);
         _audio.PlayPvs(ApproveSound, uid);
         UpdatePalletConsoleInterface(uid);
     }
 
     #endregion
-
-    private void OnRoundRestart(RoundRestartCleanupEvent ev)
-    {
-        Reset();
-    }
 }
 
 /// <summary>
@@ -334,4 +328,11 @@ public sealed partial class CargoSystem
 /// deleted but after the price has been calculated.
 /// </summary>
 [ByRefEvent]
-public readonly record struct EntitySoldEvent(HashSet<EntityUid> Sold);
+public readonly record struct EntitySoldEvent(HashSet<EntityUid> Sold, EntityUid Station);
+/// <summary>
+/// Starlight
+/// Event broadcast raised by-ref before its contents are sold
+/// but after the price has been calculated.
+/// </summary>
+[ByRefEvent]
+public readonly record struct EntitySellContentsEvent(HashSet<CargoGasPalletComponent> Containers, EntityUid Station);

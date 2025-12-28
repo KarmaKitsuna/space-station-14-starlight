@@ -32,6 +32,17 @@
     jumpsuit: ClothingUniformJumpskirtJanimaid
     id: JanitorPDA
     gloves: ClothingHandsGlovesJanitor
-    head: ClothingHeadHatCatEars
+    head: ClothingHeadHatWhiteCatEars #Starlight
     ears: ClothingHeadsetService
     belt: ClothingBeltJanitorFilled
+
+- type: chameleonOutfit
+  id: JanitorChameleonOutfit
+  job: Janitor
+  equipment:
+    head: ClothingHeadHatPurplesoft
+    eyes: ClothingEyesGlassesCheapSunglasses
+    mask: ClothingMaskGas
+    neck: ClothingNeckScarfStripedPurple
+    outerClothing: ClothingOuterWinterJani
+    gloves: ClothingHandsGlovesJanitor

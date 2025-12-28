@@ -591,7 +591,7 @@ namespace Content.Server.Administration.Systems
             {
                 GameRunLevel.PreRoundLobby => _gameTicker.RoundId == 0
                     ? "pre-round lobby after server restart" // first round after server restart has ID == 0
-                    : $"pre-round lobby for round {_gameTicker.RoundId + 1}",
+                    : $"pre-round lobby for round {_gameTicker.RoundId}",
                 GameRunLevel.InRound => $"round {_gameTicker.RoundId}",
                 GameRunLevel.PostRound => $"post-round {_gameTicker.RoundId}",
                 _ => throw new ArgumentOutOfRangeException(nameof(_gameTicker.RunLevel),
@@ -658,10 +658,10 @@ namespace Content.Server.Administration.Systems
             
             var currentTime = _timing.RealTime;
 
-            if (IsOnCooldown(message.UserId, currentTime))
+            if (IsOnCooldown(message.UserId, currentTime) && senderAdmin == null)
                 return;
             
-            if (IsSpam(message.UserId, message.Text))
+            if (IsSpam(message.UserId, message.Text) && senderAdmin == null)
                 _banManager.CreateServerBan(senderSession.UserId, senderSession.Name, null, null, null, 0, NoteSeverity.High, "Automatic AHELP Antispam system Ban, If this ban is wrong, file an appeal.");
 
             AddToRecentMessages(message.UserId, message.Text, currentTime);

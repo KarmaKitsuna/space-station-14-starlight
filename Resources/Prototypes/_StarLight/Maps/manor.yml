@@ -1,10 +1,11 @@
 - type: gameMap
-  id: Manor
+  id: StarlightManor
   mapName: 'Manor Station'
   mapPath: /Maps/_Starlight/Stations/Manor.yml
   minPlayers: 50
+  maxPlayers: 180
   stations:
-    Manor:
+    StarlightManor:
       stationProto: StandardNanotrasenStation
       components:
         - type: StationNameSetup
@@ -48,16 +49,17 @@
             Roboticist: [ 2, 2 ]
             #security
             HeadOfSecurity: [ 1, 1 ]
-            Warden: [ 1, 1 ]
+            Warden: [ 2, 2 ]
             SecurityOfficer: [ 10, 13 ]
             Detective: [ 1, 1 ]
             SecurityCadet: [ 4, 4 ]
-            Brigmedic: [ 1, 1 ]
+            Brigmedic: [ 2, 2 ]
             #supply
             Quartermaster: [ 1, 1 ]
             SalvageSpecialist: [ 3, 4 ]
             MiningSpecialist: [ 3, 3 ]
             CargoTechnician: [ 5, 7 ]
+            SalvageLead: [ 1, 1 ]
             #civilian
             Assistant: [ -1, -1 ]
             Clown: [ 1, 1 ]

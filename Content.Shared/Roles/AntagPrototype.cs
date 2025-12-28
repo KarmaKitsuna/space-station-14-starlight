@@ -8,9 +8,14 @@ namespace Content.Shared.Roles;
 ///     Describes information for a single antag.
 /// </summary>
 [Prototype]
-[Serializable, NetSerializable]
 public sealed partial class AntagPrototype : IPrototype
 {
+    // The name to group all antagonists under. Equivalent to DepartmentPrototype IDs.
+    public static readonly string GroupName = "Antagonist";
+
+    // The colour to group all antagonists using. Equivalent to DepartmentPrototype Color fields.
+    public static readonly Color GroupColor = Color.Red;
+
     [ViewVariables]
     [IdDataField]
     public string ID { get; private set; } = default!;
@@ -42,8 +47,6 @@ public sealed partial class AntagPrototype : IPrototype
     /// <summary>
     ///     Requirements that must be met to opt in to this antag role.
     /// </summary>
-    // TODO ROLE TIMERS
-    // Actually check if the requirements are met. Because apparently this is actually unused.
     [DataField, Access(typeof(SharedRoleSystem), Other = AccessPermissions.None)]
     public HashSet<JobRequirement>? Requirements;
 
@@ -53,4 +56,12 @@ public sealed partial class AntagPrototype : IPrototype
     /// </summary>
     [DataField]
     public List<ProtoId<GuideEntryPrototype>>? Guides;
+
+    /// <summary>
+    /// If this is not null, this antag will be allowed to be displayed on the character customization screen if that
+    /// character has no jobs selected.
+    /// This set of starting gear will be applied to the dummy entity.
+    /// </summary>
+    [DataField]
+    public ProtoId<StartingGearPrototype>? PreviewStartingGear;
 }

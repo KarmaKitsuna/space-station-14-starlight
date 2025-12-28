@@ -41,6 +41,26 @@
   radioChannels:
   - Medical
 
+- type: technology
+  id: BudgetCyberOrgansTech
+  name: research-technology-budget-cyber-organs
+  icon:
+    sprite: _Starlight/Objects/Specific/Medical/budget_cyber_organs.rsi
+    state: liver
+  discipline: Biochemical
+  tier: 1
+  cost: 4000
+  recipeUnlocks:
+    - BudgetCyberEyes
+    - BudgetCyberTongue
+    - BudgetCyberLiver
+    - BudgetCyberStomach
+    - BudgetCyberKidneys
+  technologyPrerequisites:
+    - SurgeryTech
+  radioChannels:
+  - Medical
+
 # Tier 2
 
 - type: technology
@@ -82,6 +102,37 @@
   radioChannels:
   - Security
   - Medical
+
+#starlight, moved from civilian to medical
+- type: technology
+  id: BiochemicalStasis
+  name: research-technology-biochemical-stasis
+  icon:
+    sprite: Structures/Machines/stasis_bed.rsi
+    state: icon
+  discipline: Biochemical
+  tier: 2
+  cost: 7500
+  recipeUnlocks:
+  - StasisBedMachineCircuitboard
+  - CryoPodMachineCircuitboard
+  - CryostasisBeaker
+  - SyringeCryostasis
+  radioChannels:
+  - Medical
+
+#starlight, moved from civilian to medical
+- type: technology
+  id: MechanizedTreatment
+  name: research-technology-mechanized-treatment
+  icon:
+    sprite: Mobs/Silicon/Chassis/medical.rsi
+    state: borg
+  discipline: Biochemical
+  tier: 2
+  cost: 5000
+  recipeUnlocks:
+  - BorgModuleAdvancedChemical
 
 # Tier 3
 
@@ -139,4 +190,52 @@
     - CyberEyeNightVision
   radioChannels:
   - Security
+  - Medical
+
+#starlight, moved from civilian to medical
+- type: technology
+  id: BluespaceChemistry
+  name: research-technology-bluespace-chemistry
+  icon:
+    sprite: Objects/Specific/Chemistry/beaker_bluespace.rsi
+    state: beakerbluespace
+  discipline: Biochemical
+  tier: 3
+  cost: 10000
+  recipeUnlocks:
+  - BluespaceBeaker
+  - SyringeBluespace
+  radioChannels:
+  - Medical
+
+#starlight, moved from civilian to medical
+- type: technology
+  id: LauncherSyringe
+  name: research-technology-launcher-syringe
+  icon:
+    sprite: Objects/Weapons/Guns/Cannons/syringe_gun.rsi
+    state: syringe_gun
+  discipline: Biochemical
+  tier: 3
+  cost: 15000
+  recipeUnlocks:
+  - LauncherSyringe
+  - MiniSyringe
+  radioChannels:
+  - Medical
+
+- type: technology
+  id: CloningSystems
+  name: research-technology-cloning
+  icon:
+    sprite: Structures/Machines/cloning.rsi
+    state: pod_0
+  discipline: Biochemical
+  tier: 3
+  cost: 25000
+  recipeUnlocks:
+  - CloningConsoleComputerCircuitboard 
+  - CloningPodMachineCircuitboard 
+  - MedicalScannerMachineCircuitboard
+  radioChannels:
   - Medical

@@ -1,8 +1,8 @@
 using Content.Client.Audio;
 using Content.Client.GameTicking.Managers;
-using Content.Client.LateJoin;
 using Content.Client.Lobby.UI;
 using Content.Client.Message;
+using Content.Client.Playtime;
 using Content.Client.UserInterface.Systems.Chat;
 using Content.Client.Voting;
 using Content.Shared.CCVar;
@@ -12,7 +12,13 @@ using Robust.Client.ResourceManagement;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
 using Robust.Shared.Configuration;
+using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
+
+#region Starlight
+using Content.Shared.GameTicking.Prototypes;
+using Robust.Client.UserInterface.CustomControls;
+#endregion Starlight
 
 namespace Content.Client.Lobby
 {
@@ -26,12 +32,17 @@ namespace Content.Client.Lobby
         [Dependency] private readonly IUserInterfaceManager _userInterfaceManager = default!;
         [Dependency] private readonly IGameTiming _gameTiming = default!;
         [Dependency] private readonly IVoteManager _voteManager = default!;
+        [Dependency] private readonly ClientsidePlaytimeTrackingManager _playtimeTracking = default!;
+        [Dependency] private readonly IClientPreferencesManager _preferences = default!; //Starlight
+        [Dependency] private readonly IPrototypeManager _protoMan = default!;
 
         private ClientGameTicker _gameTicker = default!;
         private ContentAudioSystem _contentAudioSystem = default!;
 
         protected override Type? LinkedScreenType { get; } = typeof(LobbyGui);
         public LobbyGui? Lobby;
+
+        private bool _readyPossibleWithCharacters;
 
         protected override void Startup()
         {
@@ -65,12 +76,40 @@ namespace Content.Client.Lobby
             UpdateLobbyUi();
 
             Lobby.CharacterPreview.CharacterSetupButton.OnPressed += OnSetupPressed;
+            Lobby.CharacterPreview.PrioritiesUpdated += UpdateReadyAllowed;
             Lobby.ReadyButton.OnPressed += OnReadyPressed;
             Lobby.ReadyButton.OnToggled += OnReadyToggled;
+            Lobby.ReadyButton.TooltipSupplier = GetReadyButtonTooltip;
 
             _gameTicker.InfoBlobUpdated += UpdateLobbyUi;
             _gameTicker.LobbyStatusUpdated += LobbyStatusUpdated;
             _gameTicker.LobbyLateJoinStatusUpdated += LobbyLateJoinStatusUpdated;
+
+            _userInterfaceManager.GetUIController<LobbyUIController>().OnAnyCharacterOrJobChange += UpdateReadyAllowed;
+
+            // We need to set the disabled state of the ready button when the preferences are loaded...
+            // Check for the case that they're already loaded!
+            if(_preferences.ServerDataLoaded)
+                UpdateReadyAllowed();
+            _preferences.OnServerDataLoaded += UpdateReadyAllowed;
+        }
+
+        private string GetReadyButtonTooltipText()
+        {
+            if (!Lobby!.ReadyButton.ToggleMode)
+                return Loc.GetString("ui-lobby-ready-button-tooltip-join-state");
+            if (!_preferences.ServerDataLoaded)
+                return Loc.GetString("ui-lobby-ready-button-tooltip-not-loaded");
+            if (!_readyPossibleWithCharacters)
+                return Loc.GetString("ui-lobby-ready-button-tooltip-no-possible-characters");
+            if (Lobby!.ReadyButton.Pressed)
+                return Loc.GetString("ui-lobby-ready-button-tooltip-is-ready");
+            return Loc.GetString("ui-lobby-ready-button-tooltip-is-not-ready");
+        }
+
+        private Control GetReadyButtonTooltip(Control sender)
+        {
+            return new Tooltip { Text = GetReadyButtonTooltipText() };
         }
 
         protected override void Shutdown()
@@ -179,15 +218,21 @@ namespace Content.Client.Lobby
                 Lobby!.ReadyButton.Text = Loc.GetString("lobby-state-ready-button-join-state");
                 Lobby!.ReadyButton.ToggleMode = false;
                 Lobby!.ReadyButton.Pressed = false;
+                Lobby!.ReadyButton.Disabled = false;
                 Lobby!.ObserveButton.Disabled = false;
             }
             else
             {
                 Lobby!.StartTime.Text = string.Empty;
-                Lobby!.ReadyButton.Text = Loc.GetString(Lobby!.ReadyButton.Pressed ? "lobby-state-player-status-ready": "lobby-state-player-status-not-ready");
-                Lobby!.ReadyButton.ToggleMode = true;
-                Lobby!.ReadyButton.Disabled = false;
                 Lobby!.ReadyButton.Pressed = _gameTicker.AreWeReady;
+                Lobby!.ReadyButton.Text = Loc.GetString(Lobby!.ReadyButton.Pressed ? "lobby-state-player-status-ready": "lobby-state-player-status-not-ready");
+                // If there is a tooltip showing, make sure to update the text in it as well!
+                if (Lobby!.ReadyButton.SuppliedTooltip is Tooltip tooltip)
+                {
+                    tooltip.Text = GetReadyButtonTooltipText();
+                }
+                Lobby!.ReadyButton.ToggleMode = true;
+                Lobby!.ReadyButton.Disabled = !_readyPossibleWithCharacters; // Starlight - false -> !_readyPossibleWithCharacters
                 Lobby!.ObserveButton.Disabled = true;
             }
 
@@ -195,6 +240,26 @@ namespace Content.Client.Lobby
             {
                 Lobby!.ServerInfo.SetInfoBlob(_gameTicker.ServerInfoBlob);
             }
+
+            var minutesToday = _playtimeTracking.PlaytimeMinutesToday;
+            if (minutesToday > 60)
+            {
+                Lobby!.PlaytimeComment.Visible = true;
+
+                var hoursToday = Math.Round(minutesToday / 60f, 1);
+
+                var chosenString = minutesToday switch
+                {
+                    < 180 => "lobby-state-playtime-comment-normal",
+                    < 360 => "lobby-state-playtime-comment-concerning",
+                    < 720 => "lobby-state-playtime-comment-grasstouchless",
+                    _ => "lobby-state-playtime-comment-selfdestructive"
+                };
+
+                Lobby.PlaytimeComment.SetMarkup(Loc.GetString(chosenString, ("hours", hoursToday)));
+            }
+            else
+                Lobby!.PlaytimeComment.Visible = false;
         }
 
         private void UpdateLobbySoundtrackInfo(LobbySoundtrackChangedEvent ev)
@@ -228,15 +293,22 @@ namespace Content.Client.Lobby
 
         private void UpdateLobbyBackground()
         {
-            if (_gameTicker.LobbyBackground != null)
+            if (_protoMan.TryIndex(_gameTicker.LobbyBackground, out var proto))
             {
-                Lobby!.Background.Texture = _resourceCache.GetResource<TextureResource>(_gameTicker.LobbyBackground );
+                Lobby!.Background.Texture = _resourceCache.GetResource<TextureResource>(proto.Background);
+
+                var markup = Loc.GetString("lobby-state-background-text",
+                    ("backgroundTitle", Loc.GetString(proto.Title)),
+                    ("backgroundArtist", Loc.GetString(proto.Artist)));
+
+                Lobby!.LobbyBackground.SetMarkup(markup);
             }
             else
             {
                 Lobby!.Background.Texture = null;
-            }
 
+                Lobby!.LobbyBackground.SetMarkup(Loc.GetString("lobby-state-background-no-background-text"));
+            }
         }
 
         private void SetReady(bool newReady)
@@ -247,6 +319,35 @@ namespace Content.Client.Lobby
             }
 
             _consoleHost.ExecuteCommand($"toggleready {newReady}");
+        }
+
+        /// <summary>
+        /// Check the client preferences to make sure that it's possible to be considered for any round start jobs
+        /// given the player's character selections and job priorities.
+        /// Save and cache this result, and set the disable status and unready if appropriate.
+        /// </summary>
+        private void UpdateReadyAllowed()
+        {
+            if (!_preferences.ServerDataLoaded)
+                return;
+
+            _readyPossibleWithCharacters = (_preferences.Preferences?.JobPrioritiesFiltered().Count ?? 0) != 0;
+
+            if (Lobby is null)
+                return;
+
+            // If the button is not in "Toggle Mode", the button is being used as a late join button instead, so bail.
+            if (!Lobby.ReadyButton.ToggleMode)
+                return;
+
+            Lobby.ReadyButton.Disabled = !_readyPossibleWithCharacters;
+
+            if (!_readyPossibleWithCharacters)
+            {
+                Lobby.ReadyButton.Pressed = false;
+            }
+
+            SetReady(Lobby.ReadyButton.Pressed);
         }
     }
 }

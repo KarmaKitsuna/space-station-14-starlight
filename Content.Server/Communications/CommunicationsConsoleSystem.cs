@@ -1,9 +1,7 @@
 using Content.Server.Administration.Logs;
 using Content.Server.AlertLevel;
 using Content.Server.Chat.Systems;
-using Content.Server.DeviceNetwork.Components;
 using Content.Server.DeviceNetwork.Systems;
-using Content.Server.Interaction;
 using Content.Server.Popups;
 using Content.Server.RoundEnd;
 using Content.Server.Shuttles.Systems;
@@ -16,10 +14,17 @@ using Content.Shared.Chat;
 using Content.Shared.Communications;
 using Content.Shared.Database;
 using Content.Shared.DeviceNetwork;
+using Content.Shared.DeviceNetwork.Components;
 using Content.Shared.IdentityManagement;
 using Content.Shared.Popups;
 using Robust.Server.GameObjects;
 using Robust.Shared.Configuration;
+// Starlight Start
+using System;
+using System.Collections.Generic;
+using Content.Shared.Speech;
+using Robust.Shared.Timing;
+// Starlight End
 
 namespace Content.Server.Communications
 {
@@ -36,14 +41,18 @@ namespace Content.Server.Communications
         [Dependency] private readonly UserInterfaceSystem _uiSystem = default!;
         [Dependency] private readonly IConfigurationManager _cfg = default!;
         [Dependency] private readonly IAdminLogManager _adminLogger = default!;
+        [Dependency] private readonly IGameTiming _gameTiming = default!; // Starlight
 
         private const float UIUpdateInterval = 5.0f;
+        // Starlight Start
+        private const float DefaultGlobalRecallCooldownSeconds = 30f;
+        private float _globalRecallCooldownRemaining = 0f; 
+        // Starlight End
 
         public override void Initialize()
         {
             // All events that refresh the BUI
             SubscribeLocalEvent<AlertLevelChangedEvent>(OnAlertLevelChanged);
-            SubscribeLocalEvent<CommunicationsConsoleComponent, ComponentInit>((uid, comp, _) => UpdateCommsConsoleInterface(uid, comp));
             SubscribeLocalEvent<RoundEndSystemChangedEvent>(_ => OnGenericBroadcastEvent());
             SubscribeLocalEvent<AlertLevelDelayFinishedEvent>(_ => OnGenericBroadcastEvent());
 
@@ -60,13 +69,19 @@ namespace Content.Server.Communications
 
         public override void Update(float frameTime)
         {
+            // Starlight Start
+            if (_globalRecallCooldownRemaining > 0f)
+                _globalRecallCooldownRemaining -= frameTime;
+            else
+                _globalRecallCooldownRemaining = 0f;
+            // Starlight End
             var query = EntityQueryEnumerator<CommunicationsConsoleComponent>();
             while (query.MoveNext(out var uid, out var comp))
             {
                 // TODO refresh the UI in a less horrible way
-                if (comp.AnnouncementCooldownRemaining >= 0f)
+                if (comp.AnnouncementCooldownRemaining > 0f) // Starlight-edit: this can't be lesser than 0.
                 {
-                    comp.AnnouncementCooldownRemaining -= frameTime;
+                    comp.AnnouncementCooldownRemaining = Math.Max(0, comp.AnnouncementCooldownRemaining - frameTime); // Starlight-edit: this can't be lesser than 0.
                 }
 
                 comp.UIUpdateAccumulator += frameTime;
@@ -86,6 +101,7 @@ namespace Content.Server.Communications
         public void OnCommunicationsConsoleMapInit(EntityUid uid, CommunicationsConsoleComponent comp, MapInitEvent args)
         {
             comp.AnnouncementCooldownRemaining = comp.InitialDelay;
+            UpdateCommsConsoleInterface(uid, comp);
         }
 
         /// <summary>
@@ -158,14 +174,30 @@ namespace Content.Server.Communications
                     currentDelay = _alertLevelSystem.GetAlertLevelDelay(stationUid.Value, alertComp);
                 }
             }
+            // Starlight Start
+            TimeSpan? announceEndTime = null;
+            if (comp.AnnouncementCooldownRemaining > 0f)
+                announceEndTime = _gameTiming.CurTime + TimeSpan.FromSeconds(comp.AnnouncementCooldownRemaining);
 
+            TimeSpan? recallEndTime = null;
+            if (_globalRecallCooldownRemaining > 0f)
+                recallEndTime = _gameTiming.CurTime + TimeSpan.FromSeconds(_globalRecallCooldownRemaining);
+            // Starlight End
+
+            // Starlight edit Start
             _uiSystem.SetUiState(uid, CommunicationsConsoleUiKey.Key, new CommunicationsConsoleInterfaceState(
-                CanAnnounce(comp),
-                CanCallOrRecall(comp),
-                levels,
-                currentLevel,
-                currentDelay,
-                _roundEndSystem.ExpectedCountdownEnd
+                canAnnounce: CanAnnounce(comp),
+                canCall: CanCallOrRecall(comp),
+                alertLevels: levels,
+                currentAlert: currentLevel,
+                currentAlertDelay: currentDelay,
+                expectedCountdownEnd: _roundEndSystem.ExpectedCountdownEnd,
+                announcementCooldownEnd: announceEndTime,
+                callRecallCooldownEnd: recallEndTime,
+                shuttleCountdownEnd: _roundEndSystem.ExpectedCountdownEnd,
+                shuttleCallsAllowed: _roundEndSystem.GetShuttleCallsEnabled(),
+                lastCountdownStart: _roundEndSystem.LastCountdownStart
+            // Starlight edit End
             ));
         }
 
@@ -193,19 +225,19 @@ namespace Content.Server.Communications
             if (!comp.CanShuttle)
                 return false;
 
-            // Calling shuttle checks
-            if (_roundEndSystem.ExpectedCountdownEnd is null)
-                return true;
-
-            // Recalling shuttle checks
-            var recallThreshold = _cfg.GetCVar(CCVars.EmergencyRecallTurningPoint);
-
-            // shouldn't really be happening if we got here
-            if (_roundEndSystem.ShuttleTimeLeft is not { } left
-                || _roundEndSystem.ExpectedShuttleLength is not { } expected)
+            // Starlight edit Start
+            if (_globalRecallCooldownRemaining > 0f)
                 return false;
 
-            return !(left.TotalSeconds / expected.TotalSeconds < recallThreshold);
+            if (_roundEndSystem.ExpectedCountdownEnd is { } expectedEnd && _roundEndSystem.LastCountdownStart is { } lastStart)
+            {
+                var expectedLength = expectedEnd - lastStart;
+                if (expectedLength < TimeSpan.FromMinutes(5))
+                    return false;
+            }
+
+            return true;
+            // Starlight edit End
         }
 
         private void OnSelectAlertLevelMessage(EntityUid uid, CommunicationsConsoleComponent comp, CommunicationsConsoleSelectAlertLevelMessage message)
@@ -231,6 +263,12 @@ namespace Content.Server.Communications
         {
             var maxLength = _cfg.GetCVar(CCVars.ChatMaxAnnouncementLength);
             var msg = SharedChatSystem.SanitizeAnnouncement(message.Message, maxLength);
+            //#region Starlight
+            msg = _chatSystem.SanitizeMessageReplaceWords(msg);
+            var accentEv = new AccentGetEvent(uid, msg);
+            RaiseLocalEvent(uid,accentEv);
+            msg = accentEv.Message;
+            //#endregion Starlight
             var author = Loc.GetString("comms-console-announcement-unknown-sender");
             if (message.Actor is { Valid: true } mob)
             {
@@ -260,7 +298,9 @@ namespace Content.Server.Communications
             Loc.TryGetString(comp.Title, out var title);
             title ??= comp.Title;
 
-            msg += "\n" + Loc.GetString("comms-console-announcement-sent-by") + " " + author;
+            if (comp.AnnounceSentBy)
+                msg += "\n" + Loc.GetString("comms-console-announcement-sent-by") + " " + author;
+
             if (comp.Global)
             {
                 _chatSystem.DispatchGlobalAnnouncement(msg, title, announcementSound: comp.Sound, colorOverride: comp.Color);
@@ -269,7 +309,7 @@ namespace Content.Server.Communications
                 return;
             }
 
-            _chatSystem.DispatchStationAnnouncement(uid, msg, title, colorOverride: comp.Color);
+            _chatSystem.DispatchCommunicationsConsoleAnnouncement(uid, msg, title, announcementSound: comp.Sound, colorOverride: comp.Color); // 🌟Starlight🌟
 
             _adminLogger.Add(LogType.Chat, LogImpact.Low, $"{ToPrettyString(message.Actor):player} has sent the following station announcement: {msg}");
 
@@ -292,7 +332,7 @@ namespace Content.Server.Communications
 
         private void OnCallShuttleMessage(EntityUid uid, CommunicationsConsoleComponent comp, CommunicationsConsoleCallEmergencyShuttleMessage message)
         {
-            if (!CanCallOrRecall(comp))
+            if (!CanCallOrRecall(comp) || !_roundEndSystem.GetShuttleCallsEnabled()) // Starlight edit
                 return;
 
             var mob = message.Actor;
@@ -312,6 +352,11 @@ namespace Content.Server.Communications
             }
 
             _roundEndSystem.RequestRoundEnd(uid);
+            // Starlight start
+            _globalRecallCooldownRemaining = DefaultGlobalRecallCooldownSeconds;
+
+            UpdateCommsConsoleInterface(uid, comp);
+            // Starlight End
             _adminLogger.Add(LogType.Action, LogImpact.High, $"{ToPrettyString(mob):player} has called the shuttle.");
         }
 
@@ -327,6 +372,11 @@ namespace Content.Server.Communications
             }
 
             _roundEndSystem.CancelRoundEndCountdown(uid);
+            // Starlight start
+            _globalRecallCooldownRemaining = DefaultGlobalRecallCooldownSeconds;
+
+            UpdateCommsConsoleInterface(uid, comp);
+            // Starlight End
             _adminLogger.Add(LogType.Action, LogImpact.High, $"{ToPrettyString(message.Actor):player} has recalled the shuttle.");
         }
     }

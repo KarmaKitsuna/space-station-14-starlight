@@ -7,7 +7,13 @@
   guides: [ Revolutionaries ]
   requirements:
   - !type:OverallPlaytimeRequirement
-    time: 3600 # 1h
+    time: 24h # Starlight
+  - !type:DepartmentTimeRequirement
+    department: Security
+    time: 6h # Starlight
+  - !type:DepartmentTimeRequirement
+    department: Command
+    time: 6h # Starlight
 
 - type: antag
   id: Rev
@@ -23,3 +29,4 @@
     back:
     - Flash
     - ClothingEyesGlassesSunglasses
+    - USSPUplinkImplanter

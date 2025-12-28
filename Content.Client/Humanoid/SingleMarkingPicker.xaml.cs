@@ -15,7 +15,7 @@ public sealed partial class SingleMarkingPicker : BoxContainer
     [Dependency] private readonly IEntityManager _entityManager = default!;
 
     private readonly SpriteSystem _sprite;
-    
+
     /// <summary>
     ///     What happens if a marking is selected.
     ///     It will send the 'slot' (marking index)
@@ -38,6 +38,8 @@ public sealed partial class SingleMarkingPicker : BoxContainer
     ///     Sends a 'slot' number, and the marking in question.
     /// </summary>
     public Action<(int slot, Marking marking)>? OnColorChanged;
+
+    public Action<(int slot, Marking marking)>? OnGlowingChanged; //starlight
 
     // current selected slot
     private int _slot = -1;
@@ -148,6 +150,22 @@ public sealed partial class SingleMarkingPicker : BoxContainer
         {
             PopulateList(args.Text);
         };
+
+        //starlight start
+        Glowing.OnToggled += args =>
+        {
+            if (_markings == null
+            || _markings.Count == 0
+            || !_markingManager.TryGetMarking(_markings[Slot], out var proto))
+            {
+                return;
+            }
+
+            var marking = _markings[Slot];
+            marking.IsGlowing = args.Pressed;
+            OnGlowingChanged!((_slot, marking));
+        };
+        //starlight end
     }
 
     public void UpdateData(List<Marking> markings, string species, int totalPoints)
@@ -216,7 +234,6 @@ public sealed partial class SingleMarkingPicker : BoxContainer
 
         var marking = _markings[Slot];
 
-        ColorSelectorContainer.DisposeAllChildren();
         ColorSelectorContainer.RemoveAllChildren();
 
         if (marking.MarkingColors.Count != proto.Sprites.Count)
@@ -231,6 +248,7 @@ public sealed partial class SingleMarkingPicker : BoxContainer
                 HorizontalExpand = true
             };
             selector.Color = marking.MarkingColors[i];
+            selector.SelectorType = ColorSelectorSliders.ColorSelectorType.Hsv; // defaults color selector to HSV
 
             var colorIndex = i;
             selector.OnColorChanged += color =>
@@ -241,6 +259,8 @@ public sealed partial class SingleMarkingPicker : BoxContainer
 
             ColorSelectorContainer.AddChild(selector);
         }
+
+        Glowing.Pressed = marking.IsGlowing; //starlight
     }
 
     private void SelectMarking(ItemList.ItemListSelectedEventArgs args)

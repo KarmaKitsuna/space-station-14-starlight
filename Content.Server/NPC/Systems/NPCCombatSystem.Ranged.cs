@@ -77,7 +77,7 @@ public sealed partial class NPCCombatSystem
                 continue;
             }
 
-            if (_steeringQuery.TryGetComponent(uid, out var steering) && steering.Status == SteeringStatus.NoPath && !TryComp<HitscanBatteryAmmoProviderComponent>(gunUid, out _))
+            if (_steeringQuery.TryGetComponent(uid, out var steering) && steering.Status == SteeringStatus.NoPath && !TryComp<BatteryAmmoProviderComponent>(gunUid, out _))
             {
                 comp.Status = CombatStatus.TargetUnreachable;
                 comp.ShootAccumulator = 0f;
@@ -147,7 +147,7 @@ public sealed partial class NPCCombatSystem
                 var collisionGroup = comp.UseOpaqueForLOSChecks ? CollisionGroup.Opaque : (CollisionGroup.Impassable | CollisionGroup.InteractImpassable);
 
                 //🌟Starlight🌟 start
-                if(TryComp<HitscanBatteryAmmoProviderComponent>(gunUid, out _))
+                if(TryComp<BatteryAmmoProviderComponent>(gunUid, out _))
                     collisionGroup = CollisionGroup.Opaque;
                 //🌟Starlight🌟 end
                 
@@ -206,7 +206,7 @@ public sealed partial class NPCCombatSystem
 
             if (_mapManager.TryFindGridAt(xform.MapID, targetPos, out var gridUid, out var mapGrid))
             {
-                targetCordinates = new EntityCoordinates(gridUid, mapGrid.WorldToLocal(targetSpot));
+                targetCordinates = new EntityCoordinates(gridUid, _map.WorldToLocal(gridUid, mapGrid, targetSpot));
             }
             else
             {
@@ -220,7 +220,7 @@ public sealed partial class NPCCombatSystem
                 return;
             }
 
-            _gun.AttemptShoot(uid, gunUid, gun, targetCordinates);
+            _gun.AttemptShoot(uid, gunUid, gun, targetCordinates, comp.Target);
         }
     }
 }

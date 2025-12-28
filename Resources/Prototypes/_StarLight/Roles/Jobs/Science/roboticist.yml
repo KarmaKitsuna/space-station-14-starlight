@@ -16,13 +16,16 @@
   access:
     - Research
     - Maintenance
+    - Robotics
 
 - type: startingGear
   id: RoboticistGear
   equipment:
-    outerClothing: ClothingOuterCoatRobo
     id: RoboticistPDA
-    gloves: ClothingHandsGlovesRobohands
     belt: ClothingBeltUtilityEngineering
     ears: ClothingHeadsetRobotics
-    eyes: ClothingEyesWeldingGoggles
+
+- type: chameleonOutfit
+  id: RoboticistChameleonOutfit
+  job: Roboticist
+  equipment: {} # may someone tell me what these are supposed to look like when chameleon'd

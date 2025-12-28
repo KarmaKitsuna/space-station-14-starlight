@@ -3,10 +3,15 @@
   id: BaseMobFelionoid
   abstract: true
   components:
+  - type: LanguageKnowledge
+    speaks:
+    - GalacticCommon
+    - Nekomimetic
+    understands:
+    - GalacticCommon
+    - Nekomimetic
+    - Cat
   - type: Absorbable
-  - type: MovementSpeedModifier
-    speciesSprintSpeedModifier: 1.25
-    speciesWalkSpeedModifier: 1.00
   - type: Speech
     speechVerb: Felionoid
     allowedEmotes: ['Mew', 'Hisses', 'Meow', 'Growl', 'Purr', 'Trill']
@@ -29,8 +34,12 @@
   - type: MobThresholds
     thresholds:
       0: Alive
-      75: Critical
-      150: Dead
+      85: Critical
+      170: Dead
+  - type: SlowOnDamage
+    speedModifierThresholds:
+      51: 0.7 # 60%
+      68: 0.5 # 80%
   - type: Butcherable
     butcheringType: Spike
     spawned:
@@ -61,12 +70,10 @@
     - reagents: [ Water, SpaceCleaner ]
       methods: [ Touch ]
       effects:
-      - !type:WashCreamPieReaction
+      - !type:WashCreamPie
       - !type:Emote
         emote: Hisses
-        showInChat: true
-  - type: Sprite 
-    scale: 0.8, 0.8
+        showInChat: false
   - type: Tag
     tags:
     - CanPilot
@@ -75,7 +82,7 @@
     - AnomalyHost
     - Felionoid
   - type: Fixtures
-    fixtures: 
+    fixtures:
       fix1:
         shape:
           !type:PhysShapeCircle

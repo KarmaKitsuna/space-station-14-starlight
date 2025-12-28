@@ -3,9 +3,15 @@
   name: job-name-deathsquad
   description: job-description-deathsquad
   playTimeTracker: JobDeathSquad
+  requirements:
+  - !type:OverallPlaytimeRequirement
+    time: 72000 # 20h
+  - !type:DepartmentTimeRequirement
+    department: Security
+    time: 36000 # 10h
   setPreference: false
   startingGear: DeathSquadGear
-  icon: "JobIconNanotrasen"
+  icon: "JobIconCentComm"
   supervisors: job-supervisors-centcom
   canBeAntag: false
   accessGroups:
@@ -22,8 +28,8 @@
     jumpsuit: ClothingUniformJumpsuitDeathSquad
     back: ClothingBackpackDeathSquad
     mask: ClothingMaskGasDeathSquad
-    eyes: ClothingEyesHudSecurity
-    ears: ClothingHeadsetAltCentCom
+    eyes: ClothingEyesHudCentComm
+    ears: ClothingHeadsetAltCentComDS
     gloves: ClothingHandsGlovesCombat
     outerClothing: ClothingOuterHardsuitDeathsquad
     shoes: ClothingShoesBootsMagAdv
@@ -45,3 +51,11 @@
     - FreedomImplanter
   inhand:
   - WeaponPulseRifle
+
+- type: chameleonOutfit
+  id: DeathSquadChameleonOutfit
+  job: DeathSquad
+  hasMindShield: true
+  equipment:
+    head: ClothingHeadHelmetHardsuitDeathsquad
+    neck: ClothingNeckBronzeheart

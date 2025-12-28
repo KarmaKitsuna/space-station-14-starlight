@@ -19,10 +19,16 @@
   - MagazineBoxLightRiflePractice
   - MagazineBoxMagnumPractice
   - MagazineBoxPistolPractice
+  - MagazineBoxCaselessRiflePractice
   - MagazineBoxRiflePractice
   - WeaponDisablerPractice
   - WeaponLaserCarbinePractice
   - WeaponFlareGunSecurity
+
+- type: latheRecipePack
+  id: StarlightSecurityAmmoEmagStatic
+  recipes:
+  - L6SawMagazine
 
 # Shared between secfab and emagged autolathe
 - type: latheRecipePack
@@ -38,6 +44,8 @@
   - MagazineBoxMagnumHP
   - MagazineBoxMagnumFMJ
 # Pistol
+  - MagazineBoxCaselessRifle
+  - MagazineBoxCaselessRifleRubber
   - MagazineBoxPistolSP
   - MagazineBoxPistolHP
   - MagazineBoxPistolFMJ
@@ -51,6 +59,7 @@
 # Shotgun
   - BoxLethalshot
   - BoxShotgunSlug
+  - BoxShellTranquilizer
 #####################MAGAZINE#######################
 # LMG
   - LightRifleHeavyMagazineSP
@@ -61,13 +70,20 @@
   - MagazineLightRifleSP
   - MagazineLightRifleHP
   - MagazineLightRifleFMJ
+  - MagazineLightRifleMaxim
+  - SpeedLoaderLightRifle
   - MagazineLightRifleEmpty
 # Magnum
   - SpeedLoaderMagnumSP
   - SpeedLoaderMagnumHP
   - SpeedLoaderMagnumFMJ
+  - MagazineMagnum
+  - MagazineMagnumRifleSP
+  - MagazineMagnumEmpty
   - SpeedLoaderMagnumEmpty
 # Pistol
+  - MagazinePistolCaselessRifle
+  - MagazineCaselessRifleRubber
   - MagazinePistolSP
   - MagazinePistolHP
   - MagazinePistolFMJ
@@ -83,6 +99,8 @@
   - MagazinePistolSubMachineGunEmpty
   - MagazinePistolSubMachineGunTopMounted
   - MagazinePistolSubMachineGunTopMountedEmpty
+  - MagazinePistolSubMachineGunUzi
+  - MagazinePistolSubMachineGunPPSH
 # Rifle
   - MagazineRifleSP
   - MagazineRifleHP
@@ -92,7 +110,7 @@
   - MagazineShotgun
   - MagazineShotgunEmpty
   - MagazineShotgunSlug
-  
+
   - SpeedLoaderMagnumBasic
   - SpeedLoaderShotgunEmpty
   - SpeedLoaderShotgunSlug
@@ -132,12 +150,15 @@
   - ShuttleGunFriendshipCircuitboard
   - ShuttleGunPerforatorCircuitboard
   - ShuttleGunSvalinnMachineGunCircuitboard
+  - ScanGateMachineCircuitboard
 
 - type: latheRecipePack
   parent:
   - ScienceExplosives # sec gets everything for modular grenade making that sci does
   id: StarlightSecurityExplosives
   recipes:
+  - CableDetStack1
+  - EmptyDetonator
   - ExplosivePayload
   - GrenadeBlast
   - GrenadeEMP
@@ -231,6 +252,8 @@
   - WeaponIonCarbine
   - WeaponDecloner
   - WeaponLaserImmolator
+  - WeaponLaserSvalinn
+  - WeaponTemperatureGun
 
 - type: latheRecipePack
   id: StarlightSecurityMechsWeapons
@@ -239,7 +262,22 @@
   - WeaponMechCombatShotgun
   - WeaponMechCombatShotgunIncendiary
   - WeaponMechCombatUltraRifle
+  - WeaponMechCombatXray
+  - WeaponMechChainSword
+  - WeaponMechCombatIon
+  - WeaponMechCombatAMLG90
+  - WeaponMechCombatDisabler
+  - WeaponMechCombatFlashbangLauncher
+  - WeaponMechCombatTaser
+  - WeaponMechCombatImmolationGun
+  - WeaponMechCombatSolarisLaser
+  - WeaponMechCombatFiredartLaser
 
+- type: latheRecipePack
+  id: StarlightSecurityMechsSystems
+  recipes:
+  - MechEquipmentSecGrabber
+  
 - type: latheRecipePack
   id: StarlightSecurityMechs
   recipes:

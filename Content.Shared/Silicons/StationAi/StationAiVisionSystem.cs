@@ -1,8 +1,8 @@
+using Content.Shared.Power.EntitySystems;
 using Content.Shared.StationAi;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Physics;
 using Robust.Shared.Threading;
-using Robust.Shared.Utility;
 
 namespace Content.Shared.Silicons.StationAi;
 
@@ -18,6 +18,7 @@ public sealed class StationAiVisionSystem : EntitySystem
     [Dependency] private readonly EntityLookupSystem _lookup = default!;
     [Dependency] private readonly SharedMapSystem _maps = default!;
     [Dependency] private readonly SharedTransformSystem _xforms = default!;
+    [Dependency] private readonly SharedPowerReceiverSystem _power = default!;
 
     private SeedJob _seedJob;
     private ViewJob _job;
@@ -83,6 +84,12 @@ public sealed class StationAiVisionSystem : EntitySystem
             if (!seed.Comp.Enabled)
                 continue;
 
+            if (seed.Comp.NeedsPower && !_power.IsPowered(seed.Owner))
+                continue;
+
+            if (seed.Comp.NeedsAnchoring && !Transform(seed.Owner).Anchored)
+                continue;
+
             _job.Data.Add(seed);
         }
 
@@ -119,6 +126,27 @@ public sealed class StationAiVisionSystem : EntitySystem
 
         return _job.VisibleTiles.Contains(tile);
     }
+
+    /// <summary>
+    /// Returns whether an entity is in fog of war
+    /// </summary>
+    // Starlight Start
+    public bool IsOutsideCameraView(EntityUid entity)
+    {
+        var xform = Transform(entity);
+        
+        if (!TryComp<MapGridComponent>(xform.GridUid, out var grid))
+            return true;
+
+        if (!TryComp<BroadphaseComponent>(xform.GridUid, out var broadphase))
+            return true;
+
+        var tile = _maps.LocalToTile(xform.GridUid.Value, grid, xform.Coordinates);
+        
+        // Returns true if outside of view
+        return !IsAccessible((xform.GridUid.Value, broadphase, grid), tile);
+    }
+    // Starlight End
 
     private bool IsOccluded(Entity<BroadphaseComponent, MapGridComponent> grid, Vector2i tile)
     {
@@ -162,6 +190,12 @@ public sealed class StationAiVisionSystem : EntitySystem
         foreach (var seed in _seeds)
         {
             if (!seed.Comp.Enabled)
+                continue;
+
+            if (seed.Comp.NeedsPower && !_power.IsPowered(seed.Owner))
+                continue;
+
+            if (seed.Comp.NeedsAnchoring && !Transform(seed.Owner).Anchored)
                 continue;
 
             _job.Data.Add(seed);

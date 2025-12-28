@@ -1,16 +1,18 @@
+using System.Collections.Generic;
+using Content.Client._Starlight;
 using Content.Client.Administration.UI.CustomControls;
 using Content.Client.Hands.Systems;
-using Content.Client._Starlight;
-using Content.Shared.Starlight.Medical.Surgery;
+using Content.Server.Administration.Systems;
 using Content.Shared.Body.Part;
+using Content.Shared.Starlight.Medical.Surgery;
 using JetBrains.Annotations;
 using Robust.Client.GameObjects;
 using Robust.Client.Graphics;
 using Robust.Client.Player;
 using Robust.Shared.Prototypes;
+using Robust.Shared.Timing;
 using Robust.Shared.Utility;
 using static Robust.Client.UserInterface.Control;
-using Robust.Shared.Timing;
 
 namespace Content.Client._Starlight.Medical.Surgery;
 // Based on the RMC14 build.
@@ -23,6 +25,7 @@ public sealed class SurgeryBui : BoundUserInterface
     [Dependency] private readonly IPlayerManager _player = default!;
     [Dependency] private readonly IGameTiming _game = default!;
 
+    private readonly StarlightEntitySystem _entitySystem;
     private readonly SurgerySystem _system;
     private readonly HandsSystem _hands;
 
@@ -37,6 +40,7 @@ public sealed class SurgeryBui : BoundUserInterface
     {
         _system = _entities.System<SurgerySystem>();
         _hands = _entities.System<HandsSystem>();
+        _entitySystem = _entities.System<StarlightEntitySystem>();
 
         _hands.OnPlayerItemAdded += OnPlayerItemAdded;
     }
@@ -115,7 +119,7 @@ public sealed class SurgeryBui : BoundUserInterface
 
             foreach (var (surgeryId, suffix, isCompleted) in surgeries)
             {
-                if (_system.GetSingleton(surgeryId) is not { } surgery ||
+                if (!_entitySystem.TryGetSingleton(surgeryId, out var surgery) ||
                     !_entities.TryGetComponent(surgery, out SurgeryComponent? surgeryComp))
                 {
                     continue;
@@ -176,7 +180,7 @@ public sealed class SurgeryBui : BoundUserInterface
             var last = _previousSurgeries[^1];
             _previousSurgeries.RemoveAt(_previousSurgeries.Count - 1);
 
-            if (_system.GetSingleton(last) is not { } previousId ||
+            if (!_entitySystem.TryGetSingleton(last, out var previousId) ||
                 !_entities.TryGetComponent(previousId, out SurgeryComponent? previous))
             {
                 return;
@@ -189,7 +193,7 @@ public sealed class SurgeryBui : BoundUserInterface
     private void AddStep(EntProtoId stepId, NetEntity netPart, EntProtoId surgeryId)
     {
         if (_window == null ||
-            _system.GetSingleton(stepId) is not { } step)
+            !_entitySystem.TryGetSingleton(stepId, out var step))
         {
             return;
         }
@@ -197,7 +201,7 @@ public sealed class SurgeryBui : BoundUserInterface
         var stepName = new FormattedMessage();
         stepName.AddText(_entities.GetComponent<MetaDataComponent>(step).EntityName);
 
-        var stepButton = new SurgeryStepButton { Step = step };
+        var stepButton = new SurgeryStepButton { Step = step, TooltipTextSupplier = () => stepName.ToString() };
         stepButton.Button.OnPressed += _ => SendMessage(new SurgeryStepChosenBuiMsg()
         {
             Step = stepId,
@@ -222,7 +226,11 @@ public sealed class SurgeryBui : BoundUserInterface
         {
             foreach (var requirementId in requirementIds)
             {
-                if (_system.GetSingleton(requirementId) is { } requirement && _entities.TryGetComponent(_part, out BodyPartComponent? partComp) && partComp.Body is { } Body && _part is { } Part && _system.IsSurgeryValid(Body, Part, requirementId, surgeryId, out _, out _, out _))
+                if (_entitySystem.TryGetSingleton(requirementId, out var requirement)
+                    && _entities.TryGetComponent(_part, out BodyPartComponent? partComp) 
+                    && partComp.Body is { } Body 
+                    && _part is { } Part 
+                    && _system.IsSurgeryValid(Body, Part, requirementId, surgeryId, out _, out _, out _))
                 {
                     var label = new ChoiceControl();
                     label.Button.OnPressed += _ =>
@@ -265,7 +273,7 @@ public sealed class SurgeryBui : BoundUserInterface
         var surgeries = new List<(Entity<SurgeryComponent> Ent, EntProtoId Id, string Name, bool IsCompleted, Texture?)>();
         foreach (var (surgeryId, suffix, isCompleted) in surgeryIds)
         {
-            if (_system.GetSingleton(surgeryId) is not { } surgery ||
+            if (!_entitySystem.TryGetSingleton(surgeryId, out var surgery)||
                 !_entities.TryGetComponent(surgery, out SurgeryComponent? surgeryComp))
             {
                 continue;
@@ -305,9 +313,9 @@ public sealed class SurgeryBui : BoundUserInterface
         if (_window == null ||
             !_entities.HasComponent<SurgeryComponent>(_surgery?.Ent) ||
             !_entities.TryGetComponent(_part, out BodyPartComponent? part))
-        {
             return;
-        }
+
+        UpdateDisabledPanel();
 
         var next = _system.GetNextStep(Owner, _part.Value, _surgery.Value.Ent);
         var i = 0;
@@ -318,38 +326,34 @@ public sealed class SurgeryBui : BoundUserInterface
 
             var status = StepStatus.Incomplete;
             if (next == null)
-            {
                 status = StepStatus.Complete;
-            }
+
             else if (next.Value.Surgery.Owner != _surgery.Value.Ent)
-            {
                 status = StepStatus.Incomplete;
-            }
+
             else if (next.Value.Step == i)
-            {
                 status = StepStatus.Next;
-            }
+
             else if (i < next.Value.Step)
-            {
                 status = StepStatus.Complete;
-            }
 
             stepButton.Button.Disabled = status != StepStatus.Next;
 
             var stepName = new FormattedMessage();
             stepName.AddText(_entities.GetComponent<MetaDataComponent>(stepButton.Step).EntityName);
 
+            var stepDescription = _entities.GetComponent<MetaDataComponent>(stepButton.Step).EntityDescription;
+            Func<string> stepTooltip = !string.IsNullOrEmpty(stepDescription) ? (() => stepDescription) : (() => stepName.ToString() ?? "Empty");
+
             if (status == StepStatus.Complete)
-            {
                 stepButton.Button.Modulate = Color.Green;
-            }
             else if (status == StepStatus.Next)
             {
                 stepButton.Button.Modulate = Color.White;
                 if (_player.LocalEntity is { } player &&
                     !_system.CanPerformStep(player, Owner, part.PartType, stepButton.Step, false, out var popup, out var reason, out _))
                 {
-                    stepButton.ToolTip = popup;
+                    stepButton.TooltipTextSupplier = popup != null ? (() => popup) : stepTooltip;
                     stepButton.Button.Disabled = true;
 
                     switch (reason)
@@ -369,8 +373,13 @@ public sealed class SurgeryBui : BoundUserInterface
                         case StepInvalidReason.TooHigh:
                             stepName.AddMarkupOrThrow(" [color=red](Item Too High)[/color]");
                             break;
+                        case StepInvalidReason.NotEnoughReagent:
+                            stepName.AddMarkupOrThrow(" [color=red](Missing Reagent)[/color]");
+                            break;
                     }
                 }
+                else
+                    stepButton.TooltipTextSupplier = stepTooltip;
             }
 
             var texture = _entities.GetComponentOrNull<SpriteComponent>(stepButton.Step)?.Icon?.Default;
@@ -379,16 +388,17 @@ public sealed class SurgeryBui : BoundUserInterface
         }
     }
 
-    private void UpdateDisabledPanel()
+    private void UpdateDisabledPanel(bool disable = false)
     {
         if (_window == null)
             return;
 
-        _window.DisabledPanel.Visible = false;
-        _window.DisabledPanel.MouseFilter = MouseFilterMode.Ignore;
-        return;
-
-        if (!_system.IsLyingDown(Owner))
+        if (disable || _system.IsLyingDown(Owner))
+        {
+            _window.DisabledPanel.Visible = false;
+            _window.DisabledPanel.MouseFilter = MouseFilterMode.Ignore;
+        }
+        else
         {
             _window.DisabledPanel.Visible = true;
             if (_window.DisabledLabel.GetMessage() is null)

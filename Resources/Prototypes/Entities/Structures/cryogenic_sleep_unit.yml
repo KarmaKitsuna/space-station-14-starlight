@@ -4,6 +4,15 @@
   name: cryogenic sleep unit
   description: A super-cooled container that keeps crewmates safe during space travel.
   components:
+  - type: AmbientSound #SL
+    volume: -7 #SL
+    range: 4 #SL
+    sound: #SL
+      path: /Audio/_Starlight/Effects/Machinery/electric_buzz.ogg #SL
+  - type: Anchorable
+    flags:
+    - Anchorable
+  - type: Rotatable
   - type: Sprite
     noRot: true
     sprite: Structures/cryostorage.rsi
@@ -19,10 +28,18 @@
   - type: AccessReader
     breakOnAccessBreaker: false
     access: [["Cryogenics"]]
+    examinationText: access-reader-examination-functionality-restricted
   - type: InteractionOutline
   - type: Cryostorage
-  - type: Physics
-    canCollide: false
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeAabb
+          bounds: "-0.45,-0.45,0.45,0.05"
+        density: 190
+        mask:
+        - TableMask
   - type: DragInsertContainer
     containerId: storage
     entryDelay: 2

@@ -1,9 +1,12 @@
 - type: entity
   name: prototype of the jaws of life
-  parent: JawsOfLife
+  parent: [ JawsOfLife, BaseEngineeringContraband ]
   id: PrototypeJawsOfLife
   description: Early version, not as effective.
   components:
+  - type: Tag
+    tags:
+    - PrototypeJawsOfLife
   - type: Sprite
     sprite: Objects/Tools/jaws_of_life.rsi
     state: proto_jaws_pry

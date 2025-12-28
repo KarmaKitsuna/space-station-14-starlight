@@ -35,6 +35,18 @@
     sprite: Objects/Weapons/Melee/pickaxe.rsi
     storedRotation: -45
   - type: UseDelay
+  - type: PhysicalComposition
+    materialComposition:
+      Steel: 100
+      Wood: 100
+  # 🌟Starlight-start🌟
+  - type: SurgicalDrill
+  - type: SurgeryTool
+    successRate: 0.01 # You can try
+    speed: 0.5
+    endSound:
+      path: "/Audio/Weapons/smash.ogg"
+  # 🌟Starlight-end🌟
 
 - type: entity
   name: mining drill
@@ -62,6 +74,16 @@
         Brute: 3
       types:
         Structural: 15
+  # 🌟Starlight-start🌟
+  - type: SurgicalDrill
+  - type: SurgeryTool
+    successRate: 0.2 # This drill is way too big, really
+    speed: 0.8
+    startSound:
+      path: "/Audio/Items/drill_use.ogg"
+    endSound:
+      path: "/Audio/Items/drill_use.ogg"
+  # 🌟Starlight-end🌟
 
 - type: entity
   name: diamond tipped mining drill
@@ -94,6 +116,7 @@
   description: An early design of the proto-kinetic accelerator.
   components:
   - type: Sharp
+  - type: Execution
   - type: UnpoweredFlashlight
   - type: PointLight
     color: "#ffeead"
@@ -187,6 +210,21 @@
     malus: 0.225
   - type: ThrowingAngle
     angle: 225
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape: !type:PolygonShape
+          radius: 0.01
+          vertices:
+          - -0.4,-0.2
+          - -0.2,-0.4
+          - 0.4,0.2
+          - 0.2,0.4
+        density: 20 # derived from base_item
+        mask:
+        - ItemMask
+        restitution: 0.3
+        friction: 0.2
 
 # Like a crusher... but better
 - type: entity

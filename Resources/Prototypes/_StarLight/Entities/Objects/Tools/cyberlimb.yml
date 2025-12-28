@@ -24,6 +24,9 @@
   - type: GuideHelp
     guides:
     - Construction
+  - type: Tag
+    tags:
+      - CyberHandItem
 
 - type: entity
   name: screwdriver
@@ -37,9 +40,12 @@
   - type: Tag
     tags:
     - Screwdriver
+    - CyberHandItem
   - type: Sprite
     sprite: _Starlight/Objects/Tools/cyberling.rsi
-    state: screwdriver
+    layers:
+    - state: screwdriver
+      map: ["enum.DamageStateVisualLayers.Base"]
   - type: MeleeWeapon
     wideAnimationRotation: -90
     attackRate: 1
@@ -75,6 +81,7 @@
   - type: Tag
     tags:
     - Crowbar
+    - CyberHandItem
   - type: MeleeWeapon
     wideAnimationRotation: -135
     damage:
@@ -110,6 +117,7 @@
     tags:
     - PlantSampleTaker
     - Wirecutter
+    - CyberHandItem
   - type: Sprite
     sprite: _Starlight/Objects/Tools/cyberling.rsi
     state: cutters
@@ -136,7 +144,6 @@
     endSound:
       path: /Audio/_Starlight/Medical/Surgery/scalpel2.ogg
 
-
 - type: entity
   name: welding tool
   parent: BaseItem
@@ -153,11 +160,11 @@
     - state: indwelder-on
       visible: false
       shader: unshaded
-      map: ["enum.ToggleVisuals.Layer"]
+      map: ["enum.ToggleableVisuals.Layer"]
   - type: GenericVisualizer
     visuals:
-      enum.ToggleVisuals.Toggled:
-        enum.ToggleVisuals.Layer:
+      enum.ToggleableVisuals.Enabled:
+        enum.ToggleableVisuals.Layer:
           True: { visible: true }
           False: { visible: false }
   - type: ItemToggle
@@ -242,3 +249,6 @@
     price: 40
   - type: IgnitionSource
     temperature: 700
+  - type: Tag
+    tags:
+      - CyberHandItem

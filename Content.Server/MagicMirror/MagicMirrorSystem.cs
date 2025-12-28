@@ -107,6 +107,8 @@ public sealed class MagicMirrorSystem : SharedMagicMirrorSystem
 
     private void OnSelectSlotDoAfter(EntityUid uid, MagicMirrorComponent component, MagicMirrorSelectDoAfterEvent args)
     {
+        component.DoAfter = null;
+
         if (args.Handled || args.Target == null || args.Cancelled)
             return;
 
@@ -137,13 +139,13 @@ public sealed class MagicMirrorSystem : SharedMagicMirrorSystem
         if (component.Target is not { } target)
             return;
 
-                // Check if the target getting their hair altered has any clothes that hides their hair
+        // Check if the target getting their hair altered has any clothes that hides their hair
         if (CheckHeadSlotOrClothes(message.Actor, component.Target.Value))
         {
             _popup.PopupEntity(
                 component.Target == message.Actor
                     ? Loc.GetString("magic-mirror-blocked-by-hat-self")
-                    : Loc.GetString("magic-mirror-blocked-by-hat-self-target"),
+                    : Loc.GetString("magic-mirror-blocked-by-hat-self-target", ("target", Identity.Entity(message.Actor, EntityManager))),
                 message.Actor,
                 message.Actor,
                 PopupType.Medium);
@@ -162,6 +164,7 @@ public sealed class MagicMirrorSystem : SharedMagicMirrorSystem
             Category = message.Category,
             Slot = message.Slot,
             Colors = message.Colors,
+            IsGlowing = message.IsGlowing, //starlight
         };
 
         _doAfterSystem.TryStartDoAfter(new DoAfterArgs(EntityManager, message.Actor, doafterTime, doAfter, uid, target: target, used: uid)
@@ -185,6 +188,8 @@ public sealed class MagicMirrorSystem : SharedMagicMirrorSystem
     }
     private void OnChangeColorDoAfter(EntityUid uid, MagicMirrorComponent component, MagicMirrorChangeColorDoAfterEvent args)
     {
+        component.DoAfter = null;
+
         if (args.Handled || args.Target == null || args.Cancelled)
             return;
 
@@ -205,6 +210,7 @@ public sealed class MagicMirrorSystem : SharedMagicMirrorSystem
         }
 
         _humanoid.SetMarkingColor(component.Target.Value, category, args.Slot, args.Colors);
+        _humanoid.SetMarkingGlowing(component.Target.Value, category, args.Slot, args.IsGlowing); //starlight
 
         // using this makes the UI feel like total ass
         // que
@@ -222,7 +228,7 @@ public sealed class MagicMirrorSystem : SharedMagicMirrorSystem
             _popup.PopupEntity(
                 component.Target == message.Actor
                     ? Loc.GetString("magic-mirror-blocked-by-hat-self")
-                    : Loc.GetString("magic-mirror-blocked-by-hat-self-target"),
+                    : Loc.GetString("magic-mirror-blocked-by-hat-self-target", ("target", Identity.Entity(message.Actor, EntityManager))),
                 message.Actor,
                 message.Actor,
                 PopupType.Medium);
@@ -265,6 +271,8 @@ public sealed class MagicMirrorSystem : SharedMagicMirrorSystem
 
     private void OnRemoveSlotDoAfter(EntityUid uid, MagicMirrorComponent component, MagicMirrorRemoveSlotDoAfterEvent args)
     {
+        component.DoAfter = null;
+
         if (args.Handled || args.Target == null || args.Cancelled)
             return;
 
@@ -301,7 +309,7 @@ public sealed class MagicMirrorSystem : SharedMagicMirrorSystem
             _popup.PopupEntity(
                 component.Target == message.Actor
                     ? Loc.GetString("magic-mirror-blocked-by-hat-self")
-                    : Loc.GetString("magic-mirror-blocked-by-hat-self-target"),
+                    : Loc.GetString("magic-mirror-blocked-by-hat-self-target", ("target", Identity.Entity(message.Actor, EntityManager))),
                 message.Actor,
                 message.Actor,
                 PopupType.Medium);
@@ -342,6 +350,8 @@ public sealed class MagicMirrorSystem : SharedMagicMirrorSystem
     }
     private void OnAddSlotDoAfter(EntityUid uid, MagicMirrorComponent component, MagicMirrorAddSlotDoAfterEvent args)
     {
+        component.DoAfter = null;
+
         if (args.Handled || args.Target == null || args.Cancelled || !TryComp(component.Target, out HumanoidAppearanceComponent? humanoid))
             return;
 
@@ -364,7 +374,7 @@ public sealed class MagicMirrorSystem : SharedMagicMirrorSystem
         if (string.IsNullOrEmpty(marking))
             return;
 
-        _humanoid.AddMarking(component.Target.Value, marking, Color.Black);
+        _humanoid.AddMarking(component.Target.Value, marking, false, Color.Black); //starlight, glowing
 
         UpdateInterface(uid, component.Target.Value, component);
 

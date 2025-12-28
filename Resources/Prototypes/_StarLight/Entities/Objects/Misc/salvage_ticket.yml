@@ -1,6 +1,6 @@
 - type: currency
   id: SalvageTicket
-  displayName: materials-unit-credits
+  displayName: materials-unit-tickets
   cash:
     1: SalvageTicket
   canWithdraw: true
@@ -25,10 +25,9 @@
     stackType: SalvageTicket
     count: 1
     baseLayer: base
-    layerStates:
-    - icon
-    layerCountStates:
-    - 1
+    layerFunction: Threshold
+  - type: StackLayerThreshold
+    thresholds: [1]
   - type: Sprite
     sprite: _Starlight/Objects/Economy/salvage_ticket.rsi
     state: icon
@@ -61,7 +60,7 @@
 
 - type: stack
   id: SalvageTicket
-  name: ticket
+  name: stack-ticket
   icon: { sprite: /Textures/_Starlight/Objects/Economy/salvage_ticket.rsi, state: icon }
   spawn: SalvageTicket
   

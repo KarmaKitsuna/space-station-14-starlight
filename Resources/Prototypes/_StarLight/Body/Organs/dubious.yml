@@ -11,7 +11,7 @@
     organ: Health
 
 - type: entity
-  id: OrganDubiousPlasma
+  id: OrganDubiousNitrousOxide
   parent: [OrganHumanHeart]
   name: gland
   description: Suspicious alien gland, replaces the heart.
@@ -20,7 +20,7 @@
     sprite: _Starlight/Mobs/Species/Cyberlimbs/dubious-organs.rsi
     state: gland
   - type: AbductorOrgan
-    organ: Plasma
+    organ: NitrousOxide
 
 - type: entity
   id: OrganDubiousGravity
@@ -69,3 +69,27 @@
     state: vent
   - type: AbductorOrgan
     organ: Vent
+
+- type: entity
+  id: RandomOrganDubious
+  name: random gland
+  description: a random abductor gland
+  components:
+    - type: Sprite
+      sprite: _Starlight/Mobs/Species/Cyberlimbs/dubious-organs.rsi
+      state: vent
+    - type: EntityTableSpawner
+      deleteSpawnerAfterSpawn: true
+      table: !type:NestedSelector
+        tableId: LootTableAbductorGland
+        
+- type: entityTable
+  id: LootTableAbductorGland
+  table: !type:GroupSelector
+    children:
+      - id: OrganDubiousHealth
+      - id: OrganDubiousNitrousOxide
+      - id: OrganDubiousGravity
+      - id: OrganDubiousEgg
+      - id: OrganDubiousSpider
+      - id: OrganDubiousVent

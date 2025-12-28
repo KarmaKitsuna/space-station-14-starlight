@@ -70,6 +70,19 @@
     DefenseStructure: WeaponTurretSyndicateBroken
 
 - type: salvageFaction
+  id: SovietImpossible
+  desc: salvage-faction-elder
+  biomes:
+    - TrueAbyss
+  entries:
+    - proto: MobElder
+      cost: 463
+  difficulties: 
+    - Impossible
+  configs:
+    DefenseStructure: WeaponTurretSyndicateBroken
+
+- type: salvageFaction
   id: Worms
   desc: salvage-faction-worms
   entries:
@@ -82,18 +95,18 @@
   configs:
     DefenseStructure: WeaponTurretSyndicate
 
-- type: salvageFaction
-  id: Elder
-  desc: salvage-faction-elder
-  entries:
-    - proto: MobElder
-      cost: 40000
-  biomes:
-    - Abyss
-  difficulties: 
-    - Difficult
-  configs:
-    DefenseStructure: WeaponTurretSyndicate
+# - type: salvageFaction
+#   id: Elder
+#   desc: salvage-faction-elder
+#   entries:
+#     - proto: MobElder
+#       cost: 40000
+#   biomes:
+#     - Abyss
+#   difficulties: 
+#     - Difficult
+#   configs:
+#     DefenseStructure: WeaponTurretSyndicate
 
 - type: salvageFaction
   id: Xenos

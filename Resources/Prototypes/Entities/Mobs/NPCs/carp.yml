@@ -5,6 +5,15 @@
   description: It's a space carp.
   abstract: true
   components:
+  # Starlight-start: Languages
+    - type: LanguageSpeaker
+    - type: LanguageKnowledge
+      speaks:
+      - Carptongue
+      understands:
+      - Carptongue
+      - Thaveyan
+  # Starlight-end
     - type: InputMover
     - type: MobMover
     - type: HTN
@@ -76,8 +85,7 @@
       tags:
         - Carp
         - DoorBumpOpener
-    - type: ReplacementAccent
-      accent: genericAggressive
+        - CannotSuicide
     - type: Speech
       speechVerb: LargeMob
     - type: InteractionPopup
@@ -146,7 +154,7 @@
   components:
   - type: PointLight
     radius: 1.5
-    energy: 0.5
+    energy: 2
   - type: RgbLightController
     layers: [ 0 ]
 
@@ -172,12 +180,24 @@
       rules: ghost-role-information-space-dragon-summoned-carp-rules
       mindRoles:
       - MindRoleGhostRoleTeamAntagonistFlock
-      raffle:
-        settings: short
     - type: GhostTakeoverAvailable
     - type: HTN
       rootTask:
         task: DragonCarpCompound
+    - type: Temperature
+      heatDamageThreshold: 1200
+   #Starlight
+    - type: Flammable
+      damage:
+        types: {}
+    - type: Damageable
+      damageModifierSet: DragonCarpResistances
+    - type: Prying
+      pryPowered: true
+      force: true
+      speedModifier: 1.5 # faster because carp are kinda strong
+      useSound:
+         path: /Audio/Items/crowbar.ogg 
 
 - type: entity
   id: MobCarpDungeon
@@ -243,8 +263,7 @@
         - id: FoodMeatFish
           amount: 4
         - id: MaterialToothSharkminnow1
-          amount: 1
-          maxAmount: 3
+          amount: 3
     - type: MeleeWeapon
       damage:
         types:
