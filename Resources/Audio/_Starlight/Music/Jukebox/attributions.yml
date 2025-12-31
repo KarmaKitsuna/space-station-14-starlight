@@ -1,9 +1,16 @@
-﻿- files: ["cc-interns.ogg"]
-  license: "CC-BY-SA-3.0"
-  copyright: "CC-Interns by KarmaKitsuna. Made in Suno."
-  source: "https://suno.com/song/1902325b-b4ab-4989-9554-f8dd2c99ea09?sh=rTAE5vmLV4o9nHmQ"
+- files: ["drunk_reflections_by_JAM.ogg"]
+  license: "CC0-1.0"
+  copyright: "JAM, https://modarchive.org/index.php?request=view_profile&query=81691"
+  source: "https://modarchive.org/index.php?request=view_by_moduleid&query=168639"
 
-- files: [ "steel-and-uranium.ogg" ]
-  license: "CC-BY-SA-3.0"
-  copyright: "Steel-and-Uranium by KarmaKitsuna. Made in Suno."
-  source: "https://suno.com/song/430e6945-fd14-4836-96d0-37f9e797fb9e"
+
+- files:
+  - "cue_ball_by_christofori.ogg"
+  - "jazzical_interpolation_by_christofori.ogg"
+  - "shades_of_futility_by_christofori.ogg"
+  - "the_drunken_monkey_by_christofori.ogg"
+  - "the_midnight_cry_by_christofori.ogg"
+  license: "CC0-1.0"
+  copyright: "Christofori, http://www.christofori.net"
+  source: "https://modarchive.org/index.php?request=view_profile&query=69248"
+
