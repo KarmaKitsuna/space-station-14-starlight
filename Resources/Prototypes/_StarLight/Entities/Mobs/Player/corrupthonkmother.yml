@@ -1,20 +1,19 @@
 ﻿- type: entity
   abstract: true
-  id: MobBadHonkmotherBase
-  name: Bad Honkmother
+  id: MobCorruptHonkmotherBase
   description: Insert funny pun here
   components:
     - type: Sprite
       drawdepth: Ghosts
       layers:
-        - state: badhonkmother
+        - state: corrupthonkmother
           shader: unshaded
-          sprite: _Starlight/Mobs/Demons/badhonkmother.rsi
+          sprite: _Starlight/Mobs/Demons/corrupthonkmother.rsi
           map: [ "normalLayer" ]
           visible: true
         - state: transform
           shader: unshaded
-          sprite: _Starlight/Mobs/Demons/honkmotherv2.rsi
+          sprite: _Starlight/Mobs/Demons/purehonkmother.rsi
           map: [ "enum.AnimateOnSpawnVisualLayers.Animation" ]
           visible: false
     - type: GenericVisualizer
@@ -26,11 +25,12 @@
     - type: AnimationPlayer
 
 - type: entity
-  parent: [MobBadHonkmotherBase, BaseMob, MobPolymorphable, MobCombat, BaseAnomaly]
-  id: BadHonkmother
+  parent: [MobCorruptHonkmotherBase, BaseMob, MobPolymorphable, MobCombat, BaseAnomaly]
+  id: CorruptHonkmother
+  name: Honkmother
   components:
-    - type: MobPrice
-      price: -100000 # Pay someone to take her
+    - type: StaticPrice
+      price: -500000.1 # Pay someone to take her
     - type: ContentEye
       maxZoom: 2.0,2.0
     - type: Fixtures
@@ -42,9 +42,12 @@
           density: 100
           mask:
             - FlyingMobMask
-    - type: MobState
+          layer:
+            - FlyingMobLayer
     - type: Input
       context: "human"
+    - type: VentCrawler
+    - type: ComplexInteraction
     - type: MovementIgnoreGravity
     - type: IntrinsicRadioReceiver
     - type: ActiveRadio
@@ -101,29 +104,38 @@
       range: 7 
       soundHit:
         path: /Audio/Weapons/Xeno/alien_claw_flesh3.ogg
+      angle: 0
       animation: WeaponArcThrust
       damage:
         types:
           Piercing: 10
           Slash: 10
           Structural: 250
+    - type: SolutionContainerManager
+      solutions:
+        melee:
+          reagents:
+            - ReagentId: Laughter
+              Quantity: 10
+    - type: MeleeChemicalInjector
+      solution: melee
 
 - type: entity
-  parent: BadHonkmother
+  parent: CorruptHonkmother
   suffix: transform
-  id: BadHonkmotherTransform
+  id: CorruptHonkmotherTransform
   components:
   - type: Sprite
     drawdepth: Ghosts
     layers:
-      - state: badhonkmother
+      - state: corrupthonkmother
         shader: unshaded
-        sprite: _Starlight/Mobs/Demons/badhonkmother.rsi
+        sprite: _Starlight/Mobs/Demons/corrupthonkmother.rsi
         map: [ "normalLayer" ]
         visible: false
       - state: transform
         shader: unshaded
-        sprite: _Starlight/Mobs/Demons/honkmotherv2.rsi
+        sprite: _Starlight/Mobs/Demons/purehonkmother.rsi
         map: [ "enum.AnimateOnSpawnVisualLayers.Animation" ]
         visible: true
   - type: GenericVisualizer

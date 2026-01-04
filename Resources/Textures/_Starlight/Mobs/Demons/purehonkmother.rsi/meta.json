@@ -1,7 +1,7 @@
 ﻿{
   "version": 1,
   "license": "CC-BY-SA-3.0",
-  "copyright": "sprite and animation by ReddituserID",
+  "copyright": "sprite and animation by crestfallen_warrior, edited by KarmaKitsuna",
   "size": {
     "x": 276,
     "y": 271
@@ -9,7 +9,7 @@
   "metaAtlas": false,
   "states": [
     {
-      "name": "honkmotherv2",
+      "name": "purehonkmother",
       "delays": [
         [
           0.1,

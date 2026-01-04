@@ -1,50 +1,64 @@
 ﻿- type: entity
   abstract: true
-  id: MobHonkmotherBase
-  name: honkmother
+  id: MobPureHonkmotherBase
   description: Insert funny pun here
   components:
     - type: Sprite
-      sprite: _Starlight/Mobs/Demons/honkmotherv2.rsi
+      sprite: _Starlight/Mobs/Demons/purehonkmother.rsi
       drawdepth: Ghosts
       layers:
-        - state: honkmotherv2
+        - state: purehonkmother
           shader: unshaded
 
 
 - type: entity
-  parent: [MobHonkmotherBase, BaseMob, MobCombat]
-  id: Honkmother
+  parent: [MobPureHonkmotherBase, BaseMob, MobCombat]
+  id: PureHonkmother
+  name: Honkmother
   components:
-    - type: MobPrice
-    - price: -100000 # Pay someone to take her
+    - type: StaticPrice
+      price: -500000.1 # Pay someone to take her
     - type: ContentEye
       maxZoom: 2.0,2.0
     - type: Fixtures
       fixtures:
-        EventHorizonCollider:
+        fix1:
           shape:
             !type:PhysShapeCircle
-            radius: 5
-          hard: false
-          restitution: 0.8
-          density: 1
+            radius: 0.40
+          density: 100
           mask:
-            - SingularityLayer
+            - FlyingMobMask
           layer:
-            - SingularityLayer
-        EventHorizonConsumer:
-          shape:
-            !type:PhysShapeCircle
-            radius: 5
-          hard: false
-          mask:
-            - SingularityLayer
-          layer:
-            - SingularityLayer
-    - type: Actions
+            - FlyingMobLayer
+    # Starlight-start: Languages
+    - type: LanguageKnowledge
+      speaks:
+        - GalacticCommon
+        - SolCommon
+        - Chitten
+        - Sylvan
+        - Moffic
+        - Mothroach
+        - Draconic
+        - Scratch
+        - Bubblish
+        - VoxPidgin
+        - Canilunzt
+      understands:
+        - GalacticCommon
+        - SolCommon
+        - Chitten
+        - Sylvan
+        - Moffic
+        - Mothroach
+        - Draconic
+        - Scratch
+        - Bubblish
+        - VoxPidgin
+        - Canilunzt
     - type: Input
-      context: "ghost"
+      context: "human"
     - type: MovementIgnoreGravity
     - type: IntrinsicRadioReceiver
     - type: ActiveRadio
@@ -65,6 +79,8 @@
       bodyType: Dynamic
       bodyStatus: InAir
     - type: CanMoveInAir
+    - type: VentCrawler
+    - type: ComplexInteraction
     - type: HTN
       rootTask:
         task: SimpleRangedHostileCompound
@@ -85,15 +101,18 @@
       soundGunshot: /Audio/Weapons/Guns/Gunshots/laser_clown.ogg
     - type: Speech
     - type: CombatMode
+#    - type: ActionGrant
+#      actions: 
+#        - ActionKnock
     - type: Polymorphable
       innatePolymorphs:
-        - BadHonkmotherMorph
+        - CorruptHonkmotherMorph
 
-  id: BadHonkmotherMorph
+- type: polymorph          
+  id: CorruptHonkmotherMorph
   configuration:
-    entity: BadHonkmotherTransform
+    entity: CorruptHonkmotherTransform
     transferName: true
     revertOnCrit: false
     revertOnDeath: false
     allowRepeatedMorphs: true
-
