@@ -1,4 +1,5 @@
-﻿- type: entity
+﻿# Made by KarmaKitsuna for SS14 Starlight Servers
+- type: entity
   abstract: true
   id: MobPureHonkmotherBase
   description: Insert funny pun here
@@ -101,9 +102,6 @@
       soundGunshot: /Audio/Weapons/Guns/Gunshots/laser_clown.ogg
     - type: Speech
     - type: CombatMode
-#    - type: ActionGrant
-#      actions: 
-#        - ActionKnock
     - type: Polymorphable
       innatePolymorphs:
         - CorruptHonkmotherMorph

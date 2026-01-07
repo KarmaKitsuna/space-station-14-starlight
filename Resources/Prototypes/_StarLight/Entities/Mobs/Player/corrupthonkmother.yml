@@ -1,4 +1,5 @@
-﻿- type: entity
+﻿# Made by KarmaKitsuna for SS14 Starlight Servers
+- type: entity
   abstract: true
   id: MobCorruptHonkmotherBase
   description: Insert funny pun here
@@ -28,6 +29,7 @@
   parent: [MobCorruptHonkmotherBase, BaseMob, MobPolymorphable, MobCombat, BaseAnomaly]
   id: CorruptHonkmother
   name: Honkmother
+  categories: [ HideSpawnMenu ]
   components:
     - type: StaticPrice
       price: -500000.1 # Pay someone to take her
@@ -44,6 +46,32 @@
             - FlyingMobMask
           layer:
             - FlyingMobLayer
+    # Starlight-start: Languages
+    - type: LanguageKnowledge
+      speaks:
+        - GalacticCommon
+        - SolCommon
+        - Chitten
+        - Sylvan
+        - Moffic
+        - Mothroach
+        - Draconic
+        - Scratch
+        - Bubblish
+        - VoxPidgin
+        - Canilunzt
+      understands:
+        - GalacticCommon
+        - SolCommon
+        - Chitten
+        - Sylvan
+        - Moffic
+        - Mothroach
+        - Draconic
+        - Scratch
+        - Bubblish
+        - VoxPidgin
+        - Canilunzt
     - type: Input
       context: "human"
     - type: VentCrawler
@@ -101,7 +129,7 @@
         enum.StrippingUiKey.Key:
           type: StrippableBoundUserInterface
     - type: MeleeWeapon
-      range: 7 
+      range: 2 
       soundHit:
         path: /Audio/Weapons/Xeno/alien_claw_flesh3.ogg
       angle: 0
@@ -124,6 +152,7 @@
   parent: CorruptHonkmother
   suffix: transform
   id: CorruptHonkmotherTransform
+  categories: [ HideSpawnMenu ]
   components:
   - type: Sprite
     drawdepth: Ghosts
